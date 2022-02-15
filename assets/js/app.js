@@ -45,17 +45,34 @@ let Xplayer = {
         });
         
 
-        Xplayer.linkRangeInputs(); 
-        Xplayer.initFancyVolumes(); 
+        Xplayer.linkRangeInputs();
+        Xplayer.initFancyVolumes();
+        Xplayer.initReelAnimation();
         
 
         // Bind globals
         // todo: make all these calls as foreach
         
         // START
-        $('#ctrl_play').click(() => {
+        $('#ctrl_play').click((e) => {
+            let el = $('#ctrl_play');
+            el.addClass('active').blur();
+            $('#ctrl_pause').removeClass('active');
+            $('#animated_reel').addClass('playing').removeClass('stopped');
+ 
             // todo later: check all (actually loaded to instances) if "canplay" first. if all of them are = start
 
+            // always sync times
+            if (Xplayer.instances?.A?.player[0])    {
+                Xplayer.instances.A.player[0].currentTime = Xplayer.instances.time_base.player[0].currentTime;
+            }
+            if (Xplayer.instances?.B?.player[0])    {
+                Xplayer.instances.B.player[0].currentTime = Xplayer.instances.time_base.player[0].currentTime;
+            }
+            if (Xplayer.instances?.backtrack?.player[0])    {
+                Xplayer.instances.backtrack.player[0].currentTime = Xplayer.instances.time_base.player[0].currentTime;
+            }
+            
             Xplayer.instances?.time_base?.player[0].play();
             Xplayer.instances?.A?.player[0].play();
             Xplayer.instances?.B?.player[0].play();
@@ -63,15 +80,36 @@ let Xplayer = {
         });
         
         // PAUSE
-        $('#ctrl_pause').click(() => {
-            Xplayer.instances?.time_base?.player[0].pause();
-            Xplayer.instances?.A?.player[0].pause();
-            Xplayer.instances?.B?.player[0].pause();
-            Xplayer.instances?.backtrack?.player[0].pause();
+        $('#ctrl_pause').click((e) => {
+            let el = $('#ctrl_pause');
+            el.blur();
+            let button_play = $('#ctrl_play');
+            if (!button_play.hasClass('active'))    {
+                return;
+            }
+            // unpause, if paused and state is playing
+            if (el.hasClass('active')) {
+                button_play.click();
+                el.removeClass('active');
+            }
+            else    {
+                Xplayer.instances?.time_base?.player[0].pause();
+                Xplayer.instances?.A?.player[0].pause();
+                Xplayer.instances?.B?.player[0].pause();
+                Xplayer.instances?.backtrack?.player[0].pause();
+                el.addClass('active');
+                $('#animated_reel').removeClass('playing');
+            }
         });
 
         // STOP
-        $('#ctrl_stop').click(() => {
+        $('#ctrl_stop').click((e) => {
+            let el = $('#ctrl_stop');
+            el.blur();
+            $('#ctrl_pause').removeClass('active');
+            $('#ctrl_play').removeClass('active');
+            $('#animated_reel').removeClass('playing').addClass('stopped');
+
             if (Xplayer.instances?.time_base?.player[0])    {
                 Xplayer.instances.time_base.player[0].currentTime = 0;
                 Xplayer.instances.time_base.player[0].pause();
@@ -97,7 +135,7 @@ let Xplayer = {
         
         $(document).on('keydown',function(e) {
             if (e.keyCode === 27) {     // on escape key press - pause
-                $('#ctrl_pause').toggle('click');
+                $('#ctrl_pause').click();
             }
         });
 
@@ -138,15 +176,7 @@ let Xplayer = {
                 'ui-slider-handle': 'fader-handle',
                 'ui-slider-range': 'fader-range',
             },
-                                /*change: () => {
-                                    console.log('change');
-                                },
-                                start: () => {
-                                    console.log('--START');
-                                },
-                                stop: () => {
-                                    console.log('-STOP');
-                                },*/
+            // change: () => {   // start: () => {   // stop: () => {
             create: () => {
                 // reset and append some additional markup
                 $('#crossfader-ab-value').val(0);
@@ -201,23 +231,26 @@ let Xplayer = {
                 
             },
             slide: (e, ui) => {
-                let value = ui.value;
+                let value = parseInt(ui.value);
                 if (ui.value > -4  &&  ui.value < 4)    {
                     value = 0;
                     $('#crossfader-ab').slider( 'option', 'value', 0);
                 }
                 $('#crossfader-ab-value').val(value);
                 
-                
-                
-                // todo: apply changes to tracks volume balance
-                
-                
-                
-                
+                // apply changes to tracks volume balance
+
+                $('#volume-slider_A')
+                    .val(Math.min(Math.max(100 - value, 0), 100))
+                    .trigger('change');
+
+                $('#volume-slider_B')
+                    .val(Math.min(Math.max(100 + value, 0), 100))
+                    .trigger('change');
             },
         });
         
+        // text input
         $('input#crossfader-ab-value').change((e) => {
             let value;
             
@@ -330,6 +363,10 @@ let Xplayer = {
             const percentagePosition = (100 * el_player[0].currentTime) / el_player[0].duration;
             $('#seek-slider .progress-bar').css('width', percentagePosition+'%');
         });
+
+        el_player[0].addEventListener('ended', () => {
+            $('#ctrl_stop').click();
+        });
     },
 
 
@@ -382,11 +419,40 @@ let Xplayer = {
             // $(el).css("transform", 'rotate('+finalAngle+'deg);'});   // doesn't work. need this:
             $(el).css({ WebkitTransform: 'rotate(' + finalAngle + 'deg)'});
             
-            // todo: angle correction for box shadow
+
+            // angle correction for box shadow
+            
+            let xOffset = 3;
+            let yOffset = 2;
+            let blurSpreadColor = '6px 0px #080808a6';
+            let inset = false;
+
+            let newOffset = convertOffset(xOffset, yOffset, finalAngle);
+            $(el).css({boxShadow: (inset ? 'inset ' : '') + newOffset[0] + 'px ' + newOffset[1] + 'px ' + blurSpreadColor});
+            $(el).find('.cut').css({boxShadow: (inset ? 'inset ' : '') + newOffset[0] + 'px ' + newOffset[1] + 'px ' + blurSpreadColor});
+            
+            function convertOffset(x, y, deg) {
+                let radians = deg * Math.PI / 180;
+                let sin = Math.sin(radians);
+                let cos = Math.cos(radians);
+
+                return [
+                    Math.round((x * cos + y * sin) * 100) / 100,
+                    Math.round((-x * sin + y * cos) * 100) / 100
+                ];
+            }
         }
     },
 
     
+    initReelAnimation: function ()  {
+        $('#animated_reel .power').on('dblclick', () => {
+            $('#animated_reel').toggleClass('playing');
+            $('#animated_reel').toggleClass('stopped');
+        });
+    },
+
+
     /**
      * link range inputs with their text fields
      */
@@ -404,6 +470,7 @@ let Xplayer = {
             });
             range.on( 'input change', function(){
                 text.val( range.val() );
+                text.trigger('change');
                 Xplayer.setFancyVolumeState($('#'+text.prop('id')+'__fancy'), text, range.val())
             });
         });
@@ -454,13 +521,20 @@ let Xplayer = {
         // bind actions
         
         play_as_a.click(() => {
-            Xplayer.embedInstance(fileConf, filename, title, 'A');
+            Xplayer.embedInstance(fileConf, filename, title, 'A', (player) => {
+                //console.log('CALLBACK - SYNC TIME & PLAY');
+                $('#ctrl_play').click();
+            });
         });
         play_as_b.click(() => {
-            Xplayer.embedInstance(fileConf, filename, title, 'B');
+            Xplayer.embedInstance(fileConf, filename, title, 'B', (player) => {
+                $('#ctrl_play').click();
+            });
         });
         play_as_backtrack.click(() => {
-            Xplayer.embedInstance(fileConf, filename, title, 'backtrack');
+            Xplayer.embedInstance(fileConf, filename, title, 'backtrack', (player) => {
+                $('#ctrl_play').click();
+            });
         });
 
 
@@ -477,9 +551,10 @@ let Xplayer = {
      * @param fileConf
      * @param filename
      * @param title
-     * @param load_as - target container / item role ('A' = track A, 'B' = track B, or 'backtrack'). expected values must match .instances object keys 
+     * @param load_as - target container / item role ('A' = track A, 'B' = track B, or 'backtrack'). expected values must match .instances object keys
+     * @param callback
      */
-    embedInstance: function(fileConf, filename, title, load_as) {
+    embedInstance: function(fileConf, filename, title, load_as, callback) {
 
         if (typeof Xplayer.instances[load_as] === 'undefined')  {
             return console.error('Wrong load_as value ('+load_as+'). Only predefined container/role values are possible');
@@ -489,7 +564,8 @@ let Xplayer = {
         if (!container) {
             return console.error('Container for player cannot be determined - trying using "load_as" value ('+load_as+') - #container-instance-\' + load_as is called');
         }
-        
+        if (typeof callback !== 'function')  callback = ()=>{};
+
         container.find('.play-item').remove();
         Xplayer.instances[load_as] = null;
         
@@ -512,17 +588,22 @@ let Xplayer = {
                 .append(ctrl_solo);
         
         
-        let ctrl_volume = $('<input type="range" id="volume-slider_'+load_as+'__range" max="100" value="100">'); 
+        let ctrl_volume = $('<input type="range" id="volume-slider_'+load_as+'__range" class="dev" max="100" value="100">'); 
         let ctrl_volume_linked = $('<input type="text" id="volume-slider_'+load_as+'" class="range-text" value="100">'); 
-        let ctrl_volume_fancy = $('<div id="volume-slider_'+load_as+'__fancy" class="fancy-volume state-loading" data-value="666666"><span class="cut">'); 
+        let ctrl_volume_fancy = $('<div id="volume-slider_'+load_as+'__fancy" class="fancy-volume state-loading"><span class="cut">'); 
 
-        let el_controls2 = $('<div class="me-2  text-end">')
+        let el_controls2 = $('<div class="me-2  text-end  ctrl-volume">')
                 .append(ctrl_volume_fancy, ctrl_volume, ctrl_volume_linked);
         
         let el_status = $('<div class="status"><span class="indicator"></span><p></p>'); 
         
         
         
+        ctrl_volume_linked.bind('input change', function (){
+             let value = parseInt($(ctrl_volume_linked)[0].value);
+             let volume = value ? Math.min(Math.max(value / 100, 0), 1) : 0;
+             el_player[0].volume = volume;
+        });
 
                         
                         ctrl_volume_fancy.bind('mousedown', function(event)  {
@@ -535,24 +616,29 @@ let Xplayer = {
                                 // without that check and unregistering listener also here, it sometimes doesn't run mouseup,
                                 // (like, when released above audioplayer) and still handles move
                                 if (document.body.matches(":active"))   {
-                                    console.log('== MOVE BY', deltaPx);
+                                    //console.log('== MOVE BY', deltaPx);
 
                                     // update value in related hidden input (and possibly all synced with it, like range)
                                     let mainInput = $('#'+ctrl_volume_fancy.attr('id').replace('__fancy', ''));
                                     let valueCurrent = $(mainInput)[0].value;
 
                                     // now from px distance calculate the value change. we cannot assume 1px = val change by 1, so estimate a modifier number to slow the responsibility a little
-                                    let valUpdateSpeedReductionFactor = 0.1;
+                                    let valUpdateSpeedReductionFactor = 0.05;
                                     let valueNew = parseInt(valueCurrent) + (deltaPx * valUpdateSpeedReductionFactor);
                                     
-                                    console.log('valueNew', valueNew);
-                                    console.log('parseInt(valueCurrent)', parseInt(valueCurrent));
-                                    console.log('deltaPx', deltaPx);
-                                    console.log('deltaPx * valUpdateSpeedReductionFactor', deltaPx * valUpdateSpeedReductionFactor);
+                                    valueNew = valueNew.toFixed(2);
+                                    // console.log('valueNew', valueNew);
+                                    //console.log('- VALUE CHANGE BY:', deltaPx * valUpdateSpeedReductionFactor);
 
                                     Xplayer.setFancyVolumeState(ctrl_volume_fancy, mainInput, valueNew);
                                     mainInput[0].value = valueNew;
-                                    mainInput.trigger('change');
+                                    $(mainInput[0]).trigger('change');
+                                    $(mainInput[0]).trigger('input');
+
+                                    // reset calculation ref to current, to smoothen the behaviour
+                                    if (valueNew >= 100 || valueNew <= 0) {
+                                        startY = clientY;
+                                    }
                                 }
                                 else    {
                                     document.removeEventListener('mousemove', onMouseMove);
@@ -579,12 +665,6 @@ let Xplayer = {
                             };
                         });
 
-                        
-        
-        
-        
-        // todo: sprobowac okragla regulacje
-        
         
         // todo: jesli embed wywolany zostal gdy state bylo playing, to powinien striggerowac play i sync tempa
         
@@ -592,15 +672,15 @@ let Xplayer = {
         let instance_box = $('<div class="rounded-3 p-3  play-item  player-active  state_loading">');
         instance_box.append(
             $('<div class="row">').append(
-                $('<div class="col-md-5">').append(
+                $('<div class="col-md-7">').append(
                     el_header,
                     el_status,
                     el_controls
                 ),
-                $('<div class="col-md-3  text-begin   text-endxxxx">').append(
+                $('<div class="col-md-2  text-begin   text-endxxxx">').append(
                     $('<img src="'+image+'" alt="img" class="img-fluid">')
                 ),
-                $('<div class="col-md-4">').append(
+                $('<div class="col-md-3">').append(
                     el_controls2
                 )
             ),
@@ -611,11 +691,36 @@ let Xplayer = {
         // bind actions
         
         ctrl_mute.click(() => {
-            console.log('MUTE ' + load_as); 
+            if (el_player.prop('muted'))    {
+                el_player.prop('muted', false);
+                ctrl_mute.removeClass('active');
+            }
+            else    {
+                el_player.prop('muted', true);
+                ctrl_mute.addClass('active');
+            }
         });
         
         ctrl_solo.click(() => {
-            console.log('SOLO ' + load_as); 
+            console.log('SOLO ' + load_as);
+            
+            // unmute
+            if (ctrl_solo.hasClass('active'))   {
+                // unmute all (todo: handle their possibly own mute state, respect it)
+                Xplayer.instances?.A?.player.prop('muted', false);
+                Xplayer.instances?.B?.player.prop('muted', false);
+                Xplayer.instances?.backtrack?.player.prop('muted', false);
+                ctrl_solo.removeClass('active')
+            }
+            else {
+                // just mute all and then unmute this (TRY TO MUTE WITHOUT SETTING STATE MUTED)
+                // todo: remove Solo state from them
+                Xplayer.instances?.A?.player.prop('muted', true);
+                Xplayer.instances?.B?.player.prop('muted', true);
+                Xplayer.instances?.backtrack?.player.prop('muted', true);
+                el_player.prop('muted', false);
+                ctrl_solo.addClass('active')
+            }
         });
 
         el_player.on('play', () => {
@@ -637,9 +742,15 @@ let Xplayer = {
             }
         });
 
+        // we must check, to run it only once
+        let callbackCalled = false;
         el_player[0].addEventListener('canplay', function() {
             instance_box.removeClass('state_loading');
-            //console.log('canplay');
+
+            if (callbackCalled === false)   {
+                callback(el_player[0], instance_box);
+                callbackCalled = true;
+            }
         });
 
         
@@ -647,6 +758,7 @@ let Xplayer = {
 
         container.append(instance_box);
         Xplayer.linkRangeInputs();
+        Xplayer.initFancyVolumes();
 
         
         // store operational info
