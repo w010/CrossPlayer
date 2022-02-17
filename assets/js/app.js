@@ -10,6 +10,9 @@ let Xplayer = {
         'time_base': null,
     },
 
+    // current state of overall player (time base master)
+    play_state: -1,  // -1 stopped, 0 paused, 1 playing
+
     // mainly information, in general we expect them all the same length
     duration: 0,
 
@@ -94,13 +97,16 @@ let Xplayer = {
 
         // Bind globals
         // todo: make all these calls as foreach
-        
+
+
         // START
         $('#ctrl_play').click((e) => {
             let el = $('#ctrl_play');
-            el.addClass('active').blur();
-            $('#ctrl_pause').removeClass('active');
+            el.blur();
+
             $('#animated_reel').addClass('playing').removeClass('stopped');
+            $('body').addClass('playing').removeClass('paused stopped');
+            Xplayer.play_state = 1;
  
             // todo later: check all (actually loaded to instances) if "canplay" first. if all of them are = start
 
@@ -120,57 +126,62 @@ let Xplayer = {
             Xplayer.instances?.B?.player[0].play();
             Xplayer.instances?.backtrack?.player[0].play();
         });
-        
+
+
         // PAUSE
         $('#ctrl_pause').click((e) => {
             let el = $('#ctrl_pause');
             el.blur();
-            let button_play = $('#ctrl_play');
-            if (!button_play.hasClass('active'))    {
+
+            // if player stopped
+            if (Xplayer.play_state < 0)    {
                 return;
             }
-            // unpause, if paused and state is playing
-            if (el.hasClass('active')) {
-                button_play.click();
-                el.removeClass('active');
+            // unpause, if paused
+            if (Xplayer.play_state === 0) {
+                $('#ctrl_play').click();
             }
             else    {
+                $('#animated_reel').removeClass('playing');
+                $('body').addClass('paused').removeClass('stopped');
+                Xplayer.play_state = 0;
+
                 Xplayer.instances?.time_base?.player[0].pause();
                 Xplayer.instances?.A?.player[0].pause();
                 Xplayer.instances?.B?.player[0].pause();
                 Xplayer.instances?.backtrack?.player[0].pause();
-                el.addClass('active');
-                $('#animated_reel').removeClass('playing');
             }
         });
+
 
         // STOP
         $('#ctrl_stop').click((e) => {
             let el = $('#ctrl_stop');
             el.blur();
-            $('#ctrl_pause').removeClass('active');
-            $('#ctrl_play').removeClass('active');
-            $('#animated_reel').removeClass('playing').addClass('stopped');
+
+            $('#animated_reel').addClass('stopped').removeClass('playing');
+            $('body').addClass('stopped').removeClass('playing paused');
+            Xplayer.play_state = -1;
 
             if (Xplayer.instances?.time_base?.player[0])    {
                 Xplayer.instances.time_base.player[0].currentTime = 0;
                 Xplayer.instances.time_base.player[0].pause();
-                Xplayer.instances.time_base.el.removeClass('state_playing state_pause');
+                Xplayer.instances.time_base.el.removeClass('state_playing state_paused');
             }
             if (Xplayer.instances?.A?.player[0])    {
                 Xplayer.instances.A.player[0].currentTime = 0;
                 Xplayer.instances.A.player[0].pause();
-                Xplayer.instances.A.el.removeClass('state_playing state_pause');
+                Xplayer.instances.A.el.removeClass('state_playing state_paused');
             }
             if (Xplayer.instances?.B?.player[0])    {
                 Xplayer.instances.B.player[0].currentTime = 0;
                 Xplayer.instances.B.player[0].pause();
-                Xplayer.instances.B.el.removeClass('state_playing state_pause');
+                Xplayer.instances.B.el.removeClass('state_playing state_paused');
             }
             if (Xplayer.instances?.backtrack?.player[0])    {
                 Xplayer.instances.backtrack.player[0].currentTime = 0;
                 Xplayer.instances.backtrack.player[0].pause();
-                Xplayer.instances.backtrack.el.removeClass('state_playing state_pause');
+                Xplayer.instances.backtrack.el.removeClass('state_playing state_paused');
             }
         });
     
@@ -430,10 +441,10 @@ let Xplayer = {
     
     
     initFancyVolumes: function () {
-        $('.fancy-volume.state-loading').each( (i, el) => {
+        $('.fancy-volume.is-loading').each( (i, el) => {
             let mainInput = $('#'+$(el).attr('id').replace('__fancy', ''));
             Xplayer.setFancyVolumeState(el, mainInput, $(mainInput)[0].value);
-            $(el).removeClass('state-loading');
+            $(el).removeClass('is-loading');
         });
     },
     
@@ -673,7 +684,7 @@ let Xplayer = {
         
         let ctrl_volume = $('<input type="range" id="volume-slider_'+load_as+'__range" class="dev" max="100" value="100">'); 
         let ctrl_volume_linked = $('<input type="text" id="volume-slider_'+load_as+'" class="range-text" value="100">'); 
-        let ctrl_volume_fancy = $('<div id="volume-slider_'+load_as+'__fancy" class="fancy-volume state-loading"><span class="cut">'); 
+        let ctrl_volume_fancy = $('<div id="volume-slider_'+load_as+'__fancy" class="fancy-volume is-loading"><span class="cut">'); 
 
         let el_controls2 = $('<div class="me-2  text-end  ctrl-volume">')
                 .append(ctrl_volume_fancy, ctrl_volume, ctrl_volume_linked, $('<div class="scale">'));
@@ -810,19 +821,19 @@ let Xplayer = {
         el_player.on('play', () => {
             console.log('PLAY ' + load_as);
             instance_box.addClass('state_playing');
-            instance_box.removeClass('state_pause');
+            instance_box.removeClass('state_paused');
         });
 
         el_player.on('pause', () => {
             // when time is 0 (might have been reset right now) treat as full stop
             // handle as it was a stop event
             if (!el_player[0].currentTime) {
-                console.log('STOP (from pause handler): ' + load_as);
-                instance_box.removeClass('state_pause');    
+                //console.log('STOP (from pause handler): ' + load_as);
+                instance_box.removeClass('state_paused');    
             }
             else    {
-                console.log('PAUSE:' + load_as);
-                instance_box.addClass('state_pause');
+                //console.log('PAUSE:' + load_as);
+                instance_box.addClass('state_paused');
             }
         });
 
@@ -850,7 +861,6 @@ let Xplayer = {
         Xplayer.instances[load_as] = {
             el: instance_box,
             player: el_player,
-                //play_state: -1,   // -1 stop, 0 pause, 1 play
         };
         
         

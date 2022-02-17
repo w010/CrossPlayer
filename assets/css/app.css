@@ -157,12 +157,12 @@ audio::-webkit-media-controls-panel {
     color: #1d5d39;
 }
 .btn#ctrl_play .bi { color: #000;  }
-.btn#ctrl_play.active  {
+.playing .btn#ctrl_play  {
     background-color: #20c969;
     color: #27b063;
     box-shadow: #2d9330b3 1px 0px 13px 4px;
 }
-    .btn#ctrl_play.active .bi { color: #269958;  }
+    .playing .btn#ctrl_play .bi { color: #269958;  }
     .btn#ctrl_play:hover  {
         background-color: #43ec8d;
     }
@@ -176,12 +176,12 @@ audio::-webkit-media-controls-panel {
     color: #534829;
 }
 .btn#ctrl_pause .bi { color: #000;  }
-.btn#ctrl_pause.active  {
+.paused .btn#ctrl_pause  {
     background-color: #dac34f;
     color: #b79e57;
     box-shadow: #fff4b04f 1px 0px 13px 4px;
 }
-    .btn#ctrl_pause.active .bi { color: #9b7811;  }
+    .paused .btn#ctrl_pause .bi { color: #9b7811;  }
     .btn#ctrl_pause:hover  {
         background-color: #e5d467;
     }
@@ -386,7 +386,7 @@ input.slider-value:focus   {
     background-color: #9cff9c5e;
 }
 
-.play-item.state_pause  {
+.play-item.state_paused  {
     background-color: #fdc9765e;
 }
 
@@ -446,7 +446,15 @@ input.slider-value:focus   {
 #seek-slider {
     width: 100%;
     cursor: pointer;
+    background-color: rgba(136, 141, 141, 0.93);    /* RIGHT side of the bar */
+    box-shadow: inset 4px -5px 5px 0px #080808a6;
 }
+#seek-slider .progress-bar {
+    background-color: rgba(92, 205, 107, 0.48);    /* LEFT side of the bar */ 
+    box-shadow: inset 4px -5px 5px 0px #080808a6;
+        border-radius: 0.25rem;
+}
+
 
 
 .fancy-volume   {
@@ -534,6 +542,8 @@ input.slider-value:focus   {
         border-radius: 50%;
         box-shadow: #080704 4px 3px 7px 2px;
         background: none;
+
+            transition: all .9s;
     }
     .reel w_roll_blink    {
         z-index: 1;
@@ -544,6 +554,8 @@ input.slider-value:focus   {
         height: 10em;
         background: linear-gradient(311deg, rgba(131,58,180,0) 0%, rgba(23,209,29,.2) 35%, rgba(253,29,29,.4) 45%, rgba(203,29,209,.7) 55%, rgba(252,176,69,0) 100%);
         opacity: .3;
+        
+            transition: all .9s;
     }
         .reel w_roll_blink.right    {
             right: -3px;
@@ -620,6 +632,15 @@ input.slider-value:focus   {
 .dev-mode .dev {
     display: initial;
 }
+
+
+body.dev-mode.playing   {
+    background-color: #152715 !important;
+}
+body.dev-mode.paused    {
+    background-color: #2f2a1a !important;
+}
+
 
 
 
