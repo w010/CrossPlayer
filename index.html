@@ -16,7 +16,7 @@
 	
 	
 </head>
-<body class="bg-dark  dev-mode">
+<body class="bg-dark  dev-modex">
     
     <header class="navbar sticky-top text-white flex-md-nowrap p-3">
 
@@ -34,7 +34,8 @@
         </div>
 
  		<div class="d-flex align-items-left mb-12 mb-md-12 me-md-auto">
- 			<h2 class="">CrossPlayer</h2>
+ 			<h2 class="">CrossPlayer
+				<span id="collection_title"></span></h2>
 		</div>
 
         <button aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation"
@@ -43,13 +44,13 @@
             <span class="navbar-toggler-icon"></span>
         </button>
 		
-		<p class="small text-white-50 bg-dark">v0.1</p>
+		<p class="small text-white-50 bg-dark appversion">v0.1</p>
     </header>
 
 	
     <div class="container-fluid">
         <div class="row">
-            <nav class="col-md-3 col-lg-2 d-md-block bg-dark sidebar collapse" id="sidebarMenu">
+            <nav class="col-md-2 col-lg-1 d-md-block bg-dark sidebar collapse" id="sidebarMenu">
                 <div class="position-sticky pt-3">
                     <ul class="nav flex-column">
 						<li class="nav-item">
@@ -70,7 +71,7 @@
             
             
             
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <main class="col-md-10 col-lg-11 ms-sm-auto px-md-4">
                 
 
 				
@@ -221,6 +222,14 @@
     </div>
     
     
+	<!--#BOUNDARY_CONFIG#-->
+	<script src="config.js">
+		/**
+		 * Details about config structure and option names: 
+		 *  - see assets/js/app.js
+		 */
+	</script>
+	<!--#BOUNDARY_CONFIG#-->
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"  crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 	<script src="https://code.jquery.com/ui/1.13.1/jquery-ui.min.js"  crossorigin="anonymous"></script>
     <script src="dist/js/bootstrap.bundle.min.js"></script>

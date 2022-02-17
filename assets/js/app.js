@@ -13,34 +13,75 @@ let Xplayer = {
     // mainly information, in general we expect them all the same length
     duration: 0,
 
-    files: [
-        {
-            'load_as': 'backtrack',     // this is used to build '#container-instance-NNN' selector!
-            'filename': '_player-test-drum.mp3',
-            'title': 'Rhythm-drums',
-        },
-        {
-            'load_as': 'A',
-            'filename': '_player-test-guitar.mp3',
-            'title': 'Flame / G&B / Bridge',
-            'decription': 'Lorem ipsum dolor sit amet...'
-        },
-        {
-            //'load_as': 'B',
-            'filename': '_player-test-guitar2.mp3',
-            'title': 'Flame FAKE',
-        },
-    ],
+    // configuration of current collection data
+    config: {},
 
 
+    /**
+     * Set config, handle incoming/external json, set defaults
+     * @param setup json
+     */
+    configure: function(setup) {
+        if (typeof setup === 'undefined')
+            setup = {};
+
+        Xplayer.config = {
+            image_default:      setup?.image_default  
+                    ??  'assets/images/music-note-beamed_gray.svg',
+
+            // use [audio filename].[this extension], as the image  
+            image_filename_auto_ext:        setup?.image_filename_auto_ext 
+                    ??     'jpg',
+
+            collection_title:       setup?.collection_title
+                    ??      'Default comparison',
+
+            // todo: auto trailing slash (now is required)
+            data_dir:   setup?.data_dir
+                    ??  './data/',
+
+            dev: false,
+
+            // todo:
+	        crossfader_initial: -100,
+
+            tracks:     setup?.tracks   
+                    ?? [
+                    /*{
+                        // * FILE CONFIG REF:   // todo: check & update
+
+                            // available values: 'A', 'B', 'backtrack'     // this is used to build '#container-instance-NNN' selector!
+                        'load_as': 'backtrack',
+
+                            // audio filename
+                        'filename': '_player-test-drum.mp3',
+
+                            // specify image filename explicitly, if not auto
+                        'image': '_player-test-drum.png',
+
+                            // track title
+                        'title': 'Rhythm-drums',
+
+                            // track description
+                        'description': 'Lorem....',
+                    },*/
+            ],
+        }
+        
+        if (Xplayer.config.dev)
+            $('body').addClass('dev_mode');
+    },
 
 
     initialize: function() {
         
-        // Read files config [todo later: external json file]
-        
+        //console.log(XplayerConfig);
+        //console.log(Xplayer.config);
+        Xplayer.configure(XplayerConfig);
+        //console.log(Xplayer.config);
+
         // Embed player instances
-        Xplayer.files.forEach((fileConf, i) => {
+        Xplayer.config?.tracks.forEach((fileConf, i) => {
             Xplayer.loadFile(i, fileConf);
         });
         
@@ -49,6 +90,7 @@ let Xplayer = {
         Xplayer.initFancyVolumes();
         Xplayer.initReelAnimation();
         
+        $('#collection_title').text(' - ' + Xplayer.config.collection_title);
 
         // Bind globals
         // todo: make all these calls as foreach
@@ -270,6 +312,10 @@ let Xplayer = {
 
             $('#crossfader-ab').slider( 'option', 'value', value);
         });
+        
+        $('.appversion').bind('dblclick', ()=>{
+           $('body').toggleClass('dev-mode');
+        });
     },
                 
     
@@ -305,32 +351,38 @@ let Xplayer = {
      */
     setReferenceInstance: function(fileConf, filename) {
         
+        if (typeof filename !== 'string'  ||  !filename)  {
+            return console.error('No filename specified!', fileConf);
+        }
+
+        let container = $('#container-instance-timebase');
+
         // build markup
-        let el_header = $('<h4>').text('MASTER REFERENCE PLAYER');
+        let el_header = $('<h3>').text('MASTER REFERENCE PLAYER');
         let el_header2 = $('<h5>').text(filename);
 
         let el_player = $('<audio controls preload="auto" muted class="dev">')
                 .append(
-                    $('<source src="'+filename+'" type="audio/mp3">'));
+                    $('<source src="'+ Xplayer.config.data_dir +filename+'" type="audio/mp3">'));
 
         // in general is not visible, but keep markup for dev display / debug purposes
         let instance_box = $('<div class="rounded-3 p-3  play-item  master-time">');
         instance_box.append(
             $('<div class="row">').append(
-                $('<div class="col-md-5">').append(
+                $('<div class="col-sm-5">').append(
                     el_header,
                     el_header2
                 ),
-                $('<div class="col-md-3">')
+                $('<div class="col-sm-3">')
                 ,
-                $('<div class="col-md-4">')
+                $('<div class="col-sm-4">')
             ),
             el_player
         );
 
 
         // embed in dedicated hidden box
-        $('#container-instance-timebase')
+        container
                 .append(instance_box);
         
 
@@ -485,32 +537,45 @@ let Xplayer = {
      */
     addSelectableItem: function(fileConf, filename, title) {
 
-        let image = '/assets/icons/music-note-beamed_gray.svg';
-
         // build markup
         let el_header = $('<h4>').text(title);
         
-        let play_as_a = $('<button class="btn btn-l   play_as_a" type="button">Play as <b>A</b></button>');
-        let play_as_b = $('<button class="btn btn-l   play_as_b" type="button">Play as <b>B</b></button>');
-        let play_as_backtrack = $('<button class="btn btn-l   play_as_backtrack" type="button">Play as <b>backtrack</b></button>');
+        let play_as_a = $('<button class="btn btn-l   play_as_a" type="button"><b>A</b></button>');
+        let play_as_b = $('<button class="btn btn-l   play_as_b" type="button"><b>B</b></button>');
+        let play_as_backtrack = $('<button class="btn btn-l   play_as_backtrack" type="button"><b>backtrack</b></button>');
         
-        let el_controls = $('<div class="me-2">')
+        let el_controls = $('<div class="controls  me-2">')
+                .append('<span class="small">Play as: &nbsp;</span>')
                 .append(play_as_a)
                 .append(play_as_b)
                 .append(play_as_backtrack);
 
-        let el_status = $('<div class="status"><span class="indicator"></span><p></p>');
+        let el_status = $('<div class="status"><span class="indicator"></span><p></p>')
+                .append($('<p class="dev">').text(Xplayer.config.data_dir + filename));
 
+        let filenameBase = filename.split('.').slice(0, -1).join('.');
+        let image =     // explicit image given 
+                    fileConf?.image_absolute    ??
+                        (fileConf?.image
+                            ?   Xplayer.config.data_dir + fileConf?.image
+                            :   // auto filename ext set
+                                (Xplayer.config.image_filename_auto_ext
+                                    ?   // compile image filename
+                                        Xplayer.config.data_dir  + filenameBase + '.'   + Xplayer.config.image_filename_auto_ext
+                                    :   // use default image
+                                        Xplayer.config.image_default  ?? ''
+                                )
+                        );
 
         let instance_box = $('<div class="rounded-3 p-3  play-item  track-selectable">');
         instance_box.append(
             $('<div class="row">').append(
-                $('<div class="col-md-10">').append(
+                $('<div class="col-sm-10  col-md-10">').append(
                     el_header,
                     el_status,
                     el_controls
                 ),
-                $('<div class="col-md-2  col-md-2 text-end">').append(
+                $('<div class="col-sm-2  col-md-2 text-end">').append(
                     $('<img src="'+image+'" alt="img" class="img-fluid">')
                 ),
                 //$('<div class="col-md-4">')
@@ -558,7 +623,10 @@ let Xplayer = {
 
         if (typeof Xplayer.instances[load_as] === 'undefined')  {
             return console.error('Wrong load_as value ('+load_as+'). Only predefined container/role values are possible');
-        } 
+        }
+        if (typeof filename !== 'string'  ||  !filename)  {
+            return console.error('No filename specified!', fileConf);
+        }
         
         let container = $('#container-instance-' + load_as);
         if (!container) {
@@ -566,24 +634,39 @@ let Xplayer = {
         }
         if (typeof callback !== 'function')  callback = ()=>{};
 
+        // cleanup
+
         container.find('.play-item').remove();
         Xplayer.instances[load_as] = null;
-        
-        // todo: custom
-        let image = '/assets/icons/music-note-beamed_gray.svg';
+
+        // set some values
+
+        let filenameBase = filename.split('.').slice(0, -1).join('.');
+        let image =     // explicit image given 
+                    fileConf?.image_absolute    ??
+                        (fileConf?.image
+                            ?   Xplayer.config.data_dir + fileConf?.image
+                            :   // auto filename ext set
+                                (Xplayer.config.image_filename_auto_ext
+                                    ?   // compile image filename
+                                        Xplayer.config.data_dir  + filenameBase + '.'   + Xplayer.config.image_filename_auto_ext
+                                    :   // use default image
+                                        Xplayer.config.image_default  ?? ''
+                                )
+                        );
 
         // build markup
         
         let el_player = $('<audio controls preload="auto" class="dev">')
                 .append(
-                    $('<source src="'+filename+'" type="audio/mp3">'));
+                    $('<source src="'+Xplayer.config.data_dir + filename+'" type="audio/mp3">'));
 
-        let el_header = $('<h4>').text(title);
+        let el_header = $('<h3>').text(title);
         
         let ctrl_mute = $('<button class="btn btn-l  ctrl_track_mute" type="button" title="MUTE track">M</button>'); 
         let ctrl_solo = $('<button class="btn btn-l  ctrl_track_solo" type="button" title="Track SOLO">S</button>'); 
         
-        let el_controls = $('<div class="me-2 controls">')
+        let el_controls = $('<div class="controls  me-2">')
                 .append(ctrl_mute)
                 .append(ctrl_solo);
         
@@ -593,9 +676,10 @@ let Xplayer = {
         let ctrl_volume_fancy = $('<div id="volume-slider_'+load_as+'__fancy" class="fancy-volume state-loading"><span class="cut">'); 
 
         let el_controls2 = $('<div class="me-2  text-end  ctrl-volume">')
-                .append(ctrl_volume_fancy, ctrl_volume, ctrl_volume_linked);
+                .append(ctrl_volume_fancy, ctrl_volume, ctrl_volume_linked, $('<div class="scale">'));
         
-        let el_status = $('<div class="status"><span class="indicator"></span><p></p>'); 
+        let el_status = $('<div class="status"><span class="indicator"></span><p></p>')
+                .append($('<p class="dev">').text(Xplayer.config.data_dir + filename));
         
         
         
@@ -672,15 +756,15 @@ let Xplayer = {
         let instance_box = $('<div class="rounded-3 p-3  play-item  player-active  state_loading">');
         instance_box.append(
             $('<div class="row">').append(
-                $('<div class="col-md-7">').append(
+                $('<div class="col-sm-8  col-md-8">').append(
                     el_header,
                     el_status,
                     el_controls
                 ),
-                $('<div class="col-md-2  text-begin   text-endxxxx">').append(
+                $('<div class="col-sm-2  col-md-2  text-begin   text-endxxxx">').append(
                     $('<img src="'+image+'" alt="img" class="img-fluid">')
                 ),
-                $('<div class="col-md-3">').append(
+                $('<div class="col-sm-2  col-md-2">').append(
                     el_controls2
                 )
             ),
@@ -809,7 +893,7 @@ let Xplayer = {
 
 
 
-(function () {
+(() => {
     'use strict'
 
     Xplayer.initialize();
