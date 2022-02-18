@@ -50,7 +50,8 @@ let Xplayer = {
                     ??  './data/',
 
                 // debug / advanced view
-            dev: false,
+            dev:        setup?.dev
+                    ??  false,
 
                 // start value
             crossfader_initial:     setup?.crossfader_initial
@@ -81,7 +82,7 @@ let Xplayer = {
         }
         
         if (Xplayer.config.dev)
-            $('body').addClass('dev_mode');
+            $('body').addClass('dev-mode');
     },
 
 
@@ -101,97 +102,25 @@ let Xplayer = {
         $('#collection_description').append($('<p>'+ Xplayer.config.collection_description +'</p>'));
 
         // Bind globals
-        // todo: make all these calls as foreach
 
 
         // START
-        $('#ctrl_play').click((e) => {
-            let el = $('#ctrl_play');
-            el.blur();
-
-            $('#animated_reel').addClass('playing').removeClass('stopped');
-            $('body').addClass('playing').removeClass('paused stopped');
-            Xplayer.play_state = 1;
- 
-            // todo later: check all (actually loaded to instances) if "canplay" first. if all of them are = start
-
-            // always sync times
-            if (Xplayer.instances?.A?.player[0])    {
-                Xplayer.instances.A.player[0].currentTime = Xplayer.instances.time_base.player[0].currentTime;
-            }
-            if (Xplayer.instances?.B?.player[0])    {
-                Xplayer.instances.B.player[0].currentTime = Xplayer.instances.time_base.player[0].currentTime;
-            }
-            if (Xplayer.instances?.backtrack?.player[0])    {
-                Xplayer.instances.backtrack.player[0].currentTime = Xplayer.instances.time_base.player[0].currentTime;
-            }
-            
-            Xplayer.instances?.time_base?.player[0].play();
-            Xplayer.instances?.A?.player[0].play();
-            Xplayer.instances?.B?.player[0].play();
-            Xplayer.instances?.backtrack?.player[0].play();
+        $('#ctrl_play').click(e => {
+            Xplayer.transportStart();
         });
-
 
         // PAUSE
-        $('#ctrl_pause').click((e) => {
-            let el = $('#ctrl_pause');
-            el.blur();
-
-            // if player stopped
-            if (Xplayer.play_state < 0)    {
-                return;
-            }
-            // unpause, if paused
-            if (Xplayer.play_state === 0) {
-                $('#ctrl_play').click();
-            }
-            else    {
-                $('#animated_reel').removeClass('playing');
-                $('body').addClass('paused').removeClass('stopped');
-                Xplayer.play_state = 0;
-
-                Xplayer.instances?.time_base?.player[0].pause();
-                Xplayer.instances?.A?.player[0].pause();
-                Xplayer.instances?.B?.player[0].pause();
-                Xplayer.instances?.backtrack?.player[0].pause();
-            }
+        $('#ctrl_pause').click(e => {
+            Xplayer.transportPause();
         });
 
-
         // STOP
-        $('#ctrl_stop').click((e) => {
-            let el = $('#ctrl_stop');
-            el.blur();
-
-            $('#animated_reel').addClass('stopped').removeClass('playing');
-            $('body').addClass('stopped').removeClass('playing paused');
-            Xplayer.play_state = -1;
-
-            if (Xplayer.instances?.time_base?.player[0])    {
-                Xplayer.instances.time_base.player[0].currentTime = 0;
-                Xplayer.instances.time_base.player[0].pause();
-                Xplayer.instances.time_base.el.removeClass('state_playing state_paused');
-            }
-            if (Xplayer.instances?.A?.player[0])    {
-                Xplayer.instances.A.player[0].currentTime = 0;
-                Xplayer.instances.A.player[0].pause();
-                Xplayer.instances.A.el.removeClass('state_playing state_paused');
-            }
-            if (Xplayer.instances?.B?.player[0])    {
-                Xplayer.instances.B.player[0].currentTime = 0;
-                Xplayer.instances.B.player[0].pause();
-                Xplayer.instances.B.el.removeClass('state_playing state_paused');
-            }
-            if (Xplayer.instances?.backtrack?.player[0])    {
-                Xplayer.instances.backtrack.player[0].currentTime = 0;
-                Xplayer.instances.backtrack.player[0].pause();
-                Xplayer.instances.backtrack.el.removeClass('state_playing state_paused');
-            }
+        $('#ctrl_stop').click(e => {
+            Xplayer.transportStop();
         });
     
         
-        $(document).on('keydown', (e) => {
+        $(document).on('keydown', e => {
             if (e.keyCode === 27) {     // on escape key press - pause
                 $('#ctrl_pause').click();
             }
@@ -226,6 +155,131 @@ let Xplayer = {
         });
         
         
+        Xplayer.initCrossfader();
+
+
+        $('.appversion').bind('dblclick', () => {
+            $('body').toggleClass('dev-mode');
+        });
+    },
+
+
+    /**
+     * PLAYER: START
+     */
+    transportStart: () => {
+
+        // todo: make all these calls as foreach
+
+        let el = $('#ctrl_play');
+        el.blur();
+
+        $('#animated_reel').addClass('playing').removeClass('stopped');
+        $('body').addClass('playing').removeClass('paused stopped');
+        Xplayer.play_state = 1;
+
+        // todo later: check all (actually loaded to instances) if "canplay" first. if all of them are = start
+
+        // always sync times
+        if (Xplayer.instances?.A?.player[0])    {
+            Xplayer.instances.A.player[0].currentTime = Xplayer.instances.time_base.player[0].currentTime;
+        }
+        if (Xplayer.instances?.B?.player[0])    {
+            Xplayer.instances.B.player[0].currentTime = Xplayer.instances.time_base.player[0].currentTime;
+        }
+        if (Xplayer.instances?.backtrack?.player[0])    {
+            Xplayer.instances.backtrack.player[0].currentTime = Xplayer.instances.time_base.player[0].currentTime;
+        }
+        
+        Xplayer.instances?.time_base?.player[0].play();
+        Xplayer.instances?.A?.player[0].play();
+        Xplayer.instances?.B?.player[0].play();
+        Xplayer.instances?.backtrack?.player[0].play();
+    },
+
+
+    /**
+     * PLAYER: PAUSE
+     */
+    transportPause: () => {
+
+        let el = $('#ctrl_pause');
+        el.blur();
+
+        // if player stopped
+        if (Xplayer.play_state < 0)    {
+            return;
+        }
+        // unpause, if paused
+        if (Xplayer.play_state === 0) {
+            //$('#ctrl_play').click();
+            Xplayer.transportStart();
+        }
+        else    {
+            $('#animated_reel').removeClass('playing');
+            $('body').addClass('paused').removeClass('stopped');
+            Xplayer.play_state = 0;
+
+            Xplayer.instances?.time_base?.player[0].pause();
+            Xplayer.instances?.A?.player[0].pause();
+            Xplayer.instances?.B?.player[0].pause();
+            Xplayer.instances?.backtrack?.player[0].pause();
+        }
+    },
+
+
+    /**
+     * PLAYER: STOP
+     */
+    transportStop: () => {
+
+        let el = $('#ctrl_stop');
+        el.blur();
+
+        $('#animated_reel').addClass('stopped').removeClass('playing');
+        $('body').addClass('stopped').removeClass('playing paused');
+        Xplayer.play_state = -1;
+
+        if (Xplayer.instances?.time_base?.player[0])    {
+            Xplayer.instances.time_base.player[0].currentTime = 0;
+            Xplayer.instances.time_base.player[0].pause();
+            Xplayer.instances.time_base.el.removeClass('state_playing state_paused');
+        }
+        if (Xplayer.instances?.A?.player[0])    {
+            Xplayer.instances.A.player[0].currentTime = 0;
+            Xplayer.instances.A.player[0].pause();
+            Xplayer.instances.A.el.removeClass('state_playing state_paused');
+        }
+        if (Xplayer.instances?.B?.player[0])    {
+            Xplayer.instances.B.player[0].currentTime = 0;
+            Xplayer.instances.B.player[0].pause();
+            Xplayer.instances.B.el.removeClass('state_playing state_paused');
+        }
+        if (Xplayer.instances?.backtrack?.player[0])    {
+            Xplayer.instances.backtrack.player[0].currentTime = 0;
+            Xplayer.instances.backtrack.player[0].pause();
+            Xplayer.instances.backtrack.el.removeClass('state_playing state_paused');
+        }
+    },
+
+
+    /**
+     * PLAYER: FORWARD / FFWD
+     */
+    transportFastForward: () => {
+        
+    },
+
+
+    /**
+     * PLAYER: REWIND
+     */
+    transportRewind: () => {
+        
+    },
+
+
+    initCrossfader: () => {
         $('#crossfader-ab').slider({
             range: 'min',
             min: -100,
@@ -307,36 +361,9 @@ let Xplayer = {
 
             $('#crossfader-ab').slider( 'option', 'value', value);
         });
-        
-        $('.appversion').bind('dblclick', () => {
-            $('body').toggleClass('dev-mode');
-        });
-    },
-                
-    
-    loadFile: (i, fileConf) => {
-        
-        // check input data
-        let filename = fileConf?.filename;
-        if (!filename)  {
-            console.error('ERROR IN FILE CONF! No filename set in config item', fileConf);
-            return;
-        }
-        let title = fileConf?.title ?? 'untitled ' + i;
-        let load_as = fileConf?.load_as ?? '';
-
-        // take first item and make it global time base hidden master player
-        if (i === 0)    {
-            Xplayer.setReferenceInstance(fileConf, filename);
-        }
-
-        Xplayer.addSelectableItem(fileConf, filename, title)
-        if (load_as)  {
-            Xplayer.embedInstance(fileConf, filename, title, load_as);
-        }
     },
 
-    
+
     crossfaderSetValue: (value) => {
 
         value = parseInt(value);
@@ -356,86 +383,6 @@ let Xplayer = {
             .trigger('change');
     },
     
-    /**
-     * Insert and keep ref to the base time master hidden track, which rules them all
-     * Should be called only once, but doesn't control that by itself
-     * @param fileConf
-     * @param filename
-     */
-    setReferenceInstance: (fileConf, filename) => {
-        
-        if (typeof filename !== 'string'  ||  !filename)  {
-            return console.error('No filename specified!', fileConf);
-        }
-
-        let container = $('#container-instance-timebase');
-
-        // build markup
-        let el_header = $('<h3>').text('MASTER REFERENCE PLAYER');
-        let el_header2 = $('<h5>').text(filename);
-
-        let el_player = $('<audio controls preload="auto" muted class="dev">')
-                .append(
-                    $('<source src="'+ Xplayer.config.data_dir +filename+'" type="audio/mp3">'));
-
-        // in general is not visible, but keep markup for dev display / debug purposes
-        let instance_box = $('<div class="rounded-3 p-3  play-item  master-time">');
-        instance_box.append(
-            $('<div class="row">').append(
-                $('<div class="col-sm-5">').append(
-                    el_header,
-                    el_header2
-                ),
-                $('<div class="col-sm-3">')
-                ,
-                $('<div class="col-sm-4">')
-            ),
-            el_player
-        );
-
-
-        // embed in dedicated hidden box
-        container
-                .append(instance_box);
-        
-
-        // store reference to use for timing globally
-        Xplayer.instances.time_base = {
-            'el': instance_box,
-            'player': el_player,
-        }
-
-
-        // link with global time controls
-        el_player[0].addEventListener('canplay', () => {
-            instance_box.removeClass('state_loading');
-            //console.log('BASE TIME MASTER canplay');
-
-            // set overall common duration
-            if (!Xplayer.duration)  {
-                Xplayer.duration = el_player[0].duration;
-                $('#time_duration').data('time', Xplayer.formatTime(Xplayer.duration))
-                    .trigger('datachange');
-            }
-        });
-        
-        
-        // update global time counter & progress bar while playing, always keep in sync with this item
-        el_player[0].addEventListener('timeupdate', () => {
-            // track time position 
-            $('#time_position').data('time', Xplayer.formatTime(el_player[0].currentTime))
-                    .trigger('datachange');
-            
-            // progress bar indicator
-            const percentagePosition = (100 * el_player[0].currentTime) / el_player[0].duration;
-            $('#seek-slider .progress-bar').css('width', percentagePosition+'%');
-        });
-
-        el_player[0].addEventListener('ended', () => {
-            $('#ctrl_stop').click();
-        });
-    },
-
 
     formatTime: (seconds) => {
         let durationMinutes = parseInt(seconds / 60, 10);
@@ -544,13 +491,119 @@ let Xplayer = {
     },
 
 
+    loadFile: (i, fileConf) => {
+        
+        // check input data
+        let filename = fileConf?.filename;
+        if (!filename)  {
+            console.error('ERROR IN FILE CONF! No filename set in config item', fileConf);
+            return;
+        }
+        let title = fileConf?.title ?? 'untitled ' + i;
+        let load_as = fileConf?.load_as ?? '';
+
+        // take first item and make it global time base hidden master player
+        if (i === 0)    {
+            Xplayer.file_setReferenceInstance(fileConf, filename);
+        }
+
+        Xplayer.file_addSelectableItem(fileConf, filename, title)
+        if (load_as)  {
+            Xplayer.file_embedInstance(fileConf, filename, title, load_as);
+        }
+    },
+
+
+
+    /**
+     * Insert and keep ref to the base time master hidden track, which rules them all
+     * Should be called only once, but it doesn't control that by itself
+     * @param fileConf
+     * @param filename
+     */
+    file_setReferenceInstance: (fileConf, filename) => {
+        
+        if (typeof filename !== 'string'  ||  !filename)  {
+            return console.error('No filename specified!', fileConf);
+        }
+
+        let container = $('#container-instance-timebase');
+
+        // build markup
+        let el_header = $('<h3>').text('MASTER REFERENCE PLAYER');
+        let el_header2 = $('<h5>').text(filename);
+
+        let el_player = $('<audio controls preload="auto" muted class="dev">')
+                .append(
+                    $('<source src="'+ Xplayer.config.data_dir +filename+'" type="audio/mp3">'));
+
+        // in general is not visible, but keep markup for dev display / debug purposes
+        let instance_box = $('<div class="rounded-3 p-3  play-item  master-time">');
+        instance_box.append(
+            $('<div class="row">').append(
+                $('<div class="col-sm-5">').append(
+                    el_header,
+                    el_header2
+                ),
+                $('<div class="col-sm-3">')
+                ,
+                $('<div class="col-sm-4">')
+            ),
+            el_player
+        );
+
+
+        // embed in dedicated hidden box
+        container
+                .append(instance_box);
+        
+
+        // store reference to use for timing globally
+        Xplayer.instances.time_base = {
+            'el': instance_box,
+            'player': el_player,
+        }
+
+
+        // link with global time controls
+        el_player[0].addEventListener('canplay', () => {
+            instance_box.removeClass('state_loading');
+            //console.log('BASE TIME MASTER canplay');
+
+            // set overall common duration
+            if (!Xplayer.duration)  {
+                Xplayer.duration = el_player[0].duration;
+                $('#time_duration').data('time', Xplayer.formatTime(Xplayer.duration))
+                    .trigger('datachange');
+            }
+        });
+        
+        
+        // update global time counter & progress bar while playing, always keep in sync with this item
+        el_player[0].addEventListener('timeupdate', () => {
+            // track time position 
+            $('#time_position').data('time', Xplayer.formatTime(el_player[0].currentTime))
+                    .trigger('datachange');
+            
+            // progress bar indicator
+            const percentagePosition = (100 * el_player[0].currentTime) / el_player[0].duration;
+            $('#seek-slider .progress-bar').css('width', percentagePosition+'%');
+        });
+
+        el_player[0].addEventListener('ended', () => {
+            $('#ctrl_stop').click();
+        });
+    },
+
+
+
     /**
      * Add available item to track selector (doesn't init player, only makes buttons)
      * @param fileConf
      * @param filename
      * @param title
      */
-    addSelectableItem: (fileConf, filename, title) => {
+    file_addSelectableItem: (fileConf, filename, title) => {
 
         // build markup
         let el_header = $('<h4>').text(title);
@@ -601,18 +654,18 @@ let Xplayer = {
         // bind actions
         
         play_as_a.click(() => {
-            Xplayer.embedInstance(fileConf, filename, title, 'A', (player) => {
+            Xplayer.file_embedInstance(fileConf, filename, title, 'A', (player) => {
                 //console.log('CALLBACK - SYNC TIME & PLAY');
                 $('#ctrl_play').click();
             });
         });
         play_as_b.click(() => {
-            Xplayer.embedInstance(fileConf, filename, title, 'B', (player) => {
+            Xplayer.file_embedInstance(fileConf, filename, title, 'B', (player) => {
                 $('#ctrl_play').click();
             });
         });
         play_as_backtrack.click(() => {
-            Xplayer.embedInstance(fileConf, filename, title, 'backtrack', (player) => {
+            Xplayer.file_embedInstance(fileConf, filename, title, 'backtrack', (player) => {
                 $('#ctrl_play').click();
             });
         });
@@ -634,7 +687,7 @@ let Xplayer = {
      * @param load_as - target container / item role ('A' = track A, 'B' = track B, or 'backtrack'). expected values must match .instances object keys
      * @param callback
      */
-    embedInstance: (fileConf, filename, title, load_as, callback) => {
+    file_embedInstance: (fileConf, filename, title, load_as, callback) => {
 
         if (typeof Xplayer.instances[load_as] === 'undefined')  {
             return console.error('Wrong load_as value ('+load_as+'). Only predefined container/role values are possible');
@@ -923,7 +976,7 @@ let Xplayer = {
     
     DigitAll.configure({
         valueDataKey: 'time',
-        dev: true/*XplayerConfig.dev*/,
+        dev: Xplayer.config.dev,
     });
     DigitAll.initialize({
         applyTo: '.digitall',
