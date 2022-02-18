@@ -117,7 +117,7 @@ let DigitAll = {
         if (!timeValue) {
             return false;
         }
-        if (DigitAll.dev)   console.info('- set time value: '+timeValue, el);
+        //if (DigitAll.dev)   console.info('- set time value: '+timeValue, el);
 
         // check if symbols already exist
         let digitalSymbols = $(el).find('.symbols symbol');
@@ -127,7 +127,7 @@ let DigitAll = {
 
         if (timeValue.length === digitalSymbols.length) {
             // if number of chars vs. symbol dom elements didn't change, only update them
-            if (DigitAll.dev)   console.info('- symbols exists, only update class/data-value where needed');
+            //if (DigitAll.dev)   console.info('- symbols exists, only update class/data-value where needed');
 
             for (d; d < timeValue.length; d++) {
                 let symbolValue = timeValue.charAt(d);

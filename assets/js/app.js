@@ -118,11 +118,37 @@ let Xplayer = {
         $('#ctrl_stop').click(e => {
             Xplayer.transportStop();
         });
-    
-        
+
+        // REW
+        $('#ctrl_rew').click(e => {
+            Xplayer.transportRewind();
+        });
+
+        // FFWD
+        $('#ctrl_ffwd').click(e => {
+            Xplayer.transportFastForward();
+        });
+
         $(document).on('keydown', e => {
-            if (e.keyCode === 27) {     // on escape key press - pause
-                $('#ctrl_pause').click();
+            //console.log(e.keyCode);
+            if (e.keyCode === 32) {
+                e.preventDefault();
+                if (Xplayer.play_state === 1)   {
+                    console.log('PAUSE');
+                    Xplayer.transportPause();
+                }
+                else if (Xplayer.play_state < 1)   {
+                    console.log('START');
+                    Xplayer.transportStart();  
+                }
+            }
+            if (e.keyCode === 27) {     // on escape key press - pause, if paused then stop
+                if (Xplayer.play_state === 0)   {
+                    Xplayer.transportStop();
+                }
+                else    {
+                    Xplayer.transportPause();
+                }
             }
         });
 
@@ -163,38 +189,52 @@ let Xplayer = {
         });
     },
 
+    syncTime: (time) => {
+        console.log('time sync. incoming val: ', time);
+        time = parseFloat(time);
+        
+        if (time > Xplayer.duration)    {
+            time = Xplayer.duration;
+        }
+        if (time < 0)    {
+            time = 0;
+        }
+console.log('TIME FINAL: ', time);
+        if (Xplayer.instances?.A?.player[0])    {
+            Xplayer.instances.A.player[0].currentTime = time;
+        }
+        if (Xplayer.instances?.B?.player[0])    {
+            Xplayer.instances.B.player[0].currentTime = time;
+        }
+        if (Xplayer.instances?.backtrack?.player[0])    {
+            Xplayer.instances.backtrack.player[0].currentTime = time;
+        }
+    },
 
     /**
      * PLAYER: START
      */
     transportStart: () => {
 
-        // todo: make all these calls as foreach
-
         let el = $('#ctrl_play');
         el.blur();
 
-        $('#animated_reel').addClass('playing').removeClass('stopped');
+        if (!Xplayer.instances?.time_base?.player[0])   {
+            return console.log('Cannot start playing, no time base instance! No files found?');
+        }
+
+        $('#animated_reel').addClass('spin-playing').removeClass('spin-paused spin-stopped');
         $('body').addClass('playing').removeClass('paused stopped');
         Xplayer.play_state = 1;
 
         // todo later: check all (actually loaded to instances) if "canplay" first. if all of them are = start
 
         // always sync times
-        if (Xplayer.instances?.A?.player[0])    {
-            Xplayer.instances.A.player[0].currentTime = Xplayer.instances.time_base.player[0].currentTime;
-        }
-        if (Xplayer.instances?.B?.player[0])    {
-            Xplayer.instances.B.player[0].currentTime = Xplayer.instances.time_base.player[0].currentTime;
-        }
-        if (Xplayer.instances?.backtrack?.player[0])    {
-            Xplayer.instances.backtrack.player[0].currentTime = Xplayer.instances.time_base.player[0].currentTime;
-        }
-        
-        Xplayer.instances?.time_base?.player[0].play();
-        Xplayer.instances?.A?.player[0].play();
-        Xplayer.instances?.B?.player[0].play();
-        Xplayer.instances?.backtrack?.player[0].play();
+        Xplayer.syncTime(Xplayer.instances.time_base.player[0].currentTime);
+
+        $.each(['time_base', 'A', 'B', 'backtrack'], (i, key) => {
+            Xplayer.instances[key]?.player[0]?.play();
+        });
     },
 
 
@@ -212,18 +252,16 @@ let Xplayer = {
         }
         // unpause, if paused
         if (Xplayer.play_state === 0) {
-            //$('#ctrl_play').click();
             Xplayer.transportStart();
         }
         else    {
-            $('#animated_reel').removeClass('playing');
+            $('#animated_reel').removeClass('spin-playing').addClass('spin-paused');
             $('body').addClass('paused').removeClass('stopped');
             Xplayer.play_state = 0;
 
-            Xplayer.instances?.time_base?.player[0].pause();
-            Xplayer.instances?.A?.player[0].pause();
-            Xplayer.instances?.B?.player[0].pause();
-            Xplayer.instances?.backtrack?.player[0].pause();
+            $.each(['time_base', 'A', 'B', 'backtrack'], (i, key) => {
+                Xplayer.instances[key]?.player[0]?.pause();
+            });
         }
     },
 
@@ -236,30 +274,17 @@ let Xplayer = {
         let el = $('#ctrl_stop');
         el.blur();
 
-        $('#animated_reel').addClass('stopped').removeClass('playing');
+        $('#animated_reel').addClass('spin-stopped').removeClass('spin-playing spin-paused');
         $('body').addClass('stopped').removeClass('playing paused');
         Xplayer.play_state = -1;
 
-        if (Xplayer.instances?.time_base?.player[0])    {
-            Xplayer.instances.time_base.player[0].currentTime = 0;
-            Xplayer.instances.time_base.player[0].pause();
-            Xplayer.instances.time_base.el.removeClass('state_playing state_paused');
-        }
-        if (Xplayer.instances?.A?.player[0])    {
-            Xplayer.instances.A.player[0].currentTime = 0;
-            Xplayer.instances.A.player[0].pause();
-            Xplayer.instances.A.el.removeClass('state_playing state_paused');
-        }
-        if (Xplayer.instances?.B?.player[0])    {
-            Xplayer.instances.B.player[0].currentTime = 0;
-            Xplayer.instances.B.player[0].pause();
-            Xplayer.instances.B.el.removeClass('state_playing state_paused');
-        }
-        if (Xplayer.instances?.backtrack?.player[0])    {
-            Xplayer.instances.backtrack.player[0].currentTime = 0;
-            Xplayer.instances.backtrack.player[0].pause();
-            Xplayer.instances.backtrack.el.removeClass('state_playing state_paused');
-        }
+        $.each(['time_base', 'A', 'B', 'backtrack'], (i, key) => {
+           if (Xplayer.instances[key]?.player[0])    {
+                Xplayer.instances[key].player[0].currentTime = 0;
+                Xplayer.instances[key].player[0].pause();
+                Xplayer.instances[key].el.removeClass('state_playing state_paused');
+            }
+        });
     },
 
 
@@ -267,7 +292,8 @@ let Xplayer = {
      * PLAYER: FORWARD / FFWD
      */
     transportFastForward: () => {
-        
+        console.log(Xplayer.instances.time_base.player[0].currentTime);
+        Xplayer.syncTime(Xplayer.instances.time_base.player[0].currentTime + 5);
     },
 
 
@@ -275,7 +301,10 @@ let Xplayer = {
      * PLAYER: REWIND
      */
     transportRewind: () => {
+        console.log(Xplayer.instances.time_base.player[0].currentTime);
+        console.log(Xplayer.instances.time_base.player[0].currentTime - 5);
         
+        Xplayer.syncTime(Xplayer.instances.time_base.player[0].currentTime - 5);
     },
 
 
@@ -462,7 +491,7 @@ let Xplayer = {
     initReelAnimation: () => {
         // just for fun
         $('#animated_reel .power').on('dblclick', () => {
-            $('#animated_reel').toggleClass('playing').toggleClass('stopped');
+            $('#animated_reel').toggleClass('spin-playing').toggleClass('spin-stopped');
         });
     },
 
