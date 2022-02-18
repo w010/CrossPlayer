@@ -1,0 +1,272 @@
+
+:root {
+
+    --da-el-background: #2d3b1347;
+    --da-el-border: 1px solid #414141c2;
+    --da-el-lit-background-color: #159f5e;
+        /*--da-el-lit-border: 1px solid #00ff95;*/
+    --da-el-scale: 1;
+    --da-el-lit-border-color: rgba(0, 255, 149, 0.65);
+    --da-el-lit-border: calc(1px  *  var(--da-el-scale)) solid var(--da-el-lit-border-color);
+    --da-el-lit-boxshadow-color: #00ff9522;
+        /* below need to be recalled, if overriding the color! */
+    --da-el-lit-boxshadow: var(--da-el-lit-boxshadow-color) calc(3px * var(--da-el-scale)) calc(5px * var(--da-el-scale)) calc(15px * var(--da-el-scale)) calc(7px * var(--da-el-scale));
+
+
+        /* height:width ratio, use where possible to automatically calculate sizes */
+    --da-symbol-size-ratio: 2;
+    --da-symbol-width: 4em;
+        /* width * ratio */
+    --da-symbol-height: calc(var(--da-symbol-width)  *  var(--da-symbol-size-ratio));
+    --da-symbol-margin: 0 0.5em;
+    --da-symbol-skew: 350deg;
+    
+
+    --da-line-radius: 30%;
+    --da-line-thickness_h: 5%;
+        /* --da-line-thickness_h * 2 */
+        /*--da-line-thickness_v: calc(var(--da-line-thickness_h) * var(--da-symbol-size-ratio));*/
+    --da-line-thickness_v: 10%;
+        /* 100 - (--da-line-thickness_v * 2) */
+    --da-line-length_h: 80%;
+        /* (100 - --da-line-thickness_v - --da-line-thickness_h) / 2 */
+    --da-line-length_v: 42.5%;
+        /* (100 - --da-line-thickness_h) / 2 */
+    --da-line-middle-top: 47.5%;
+
+    
+    --da-slash-thickness: var(--da-line-thickness_v);
+    --da-slash-length: 40%;
+    --da-slash-angle: 15deg;
+    --da-slash-top-left: 45%;
+    --da-slash-top-top: 7.5%;
+    --da-slash-bottom-left: 25%;
+    --da-slash-bottom-bottom: 7.5%;
+    
+
+    --da-dot-width: 20%;
+    --da-dot-height: calc(var(--da-dot-width)  /  var(--da-symbol-size-ratio));
+    --da-dot-radius: var(--da-line-radius);
+    --da-dot-top-left: 62%;
+    --da-dot-top-top: 25%;
+    --da-dot-bottom-left: 62%;
+    --da-dot-bottom-bottom: 25%;
+}
+
+
+
+
+.digitall   {
+    /*border: 1px solid red;*/
+    display: inline-block;
+}
+
+.digitall .symbols   {
+    /*border: 1px solid blue;*/
+}
+.digitall .symbols symbol   {
+    /*border: 1px solid yellow;*/
+    display: inline-block;
+    position: relative;
+    height: var(--da-symbol-height);
+    width: var(--da-symbol-width);
+    margin: var(--da-symbol-margin);
+    transform: skew(var(--da-symbol-skew));
+}
+
+.digitall .symbols symbol .el   {
+    position: absolute;
+    background: var(--da-el-background);
+    border: var(--da-el-border);
+}
+
+.digitall .symbols symbol .line {
+    border-radius: var(--da-line-radius);
+}
+
+    .digitall .symbols symbol .line.horizontal   {
+        height: var(--da-line-thickness_h);
+        width: var(--da-line-length_h);
+    }
+        .digitall .symbols symbol .line.top {
+            left: var(--da-line-thickness_v);
+            top: 0;
+        }
+        .digitall .symbols symbol .line.middle {
+            left: var(--da-line-thickness_v);
+            top: var(--da-line-middle-top);
+        }
+        .digitall .symbols symbol .line.bottom {
+            left: var(--da-line-thickness_v);
+            bottom: 0;
+        }
+
+    .digitall .symbols symbol .line.vertical   {
+        height: var(--da-line-length_v);
+        width: var(--da-line-thickness_v);
+    }
+        .digitall .symbols symbol .line.lefttop {
+            left: 0;
+            top: var(--da-line-thickness_h);
+        }
+        .digitall .symbols symbol .line.leftbottom {
+            left: 0;
+            bottom: var(--da-line-thickness_h);
+        }
+        .digitall .symbols symbol .line.righttop {
+            right: 0;
+            top: var(--da-line-thickness_h);
+        }
+        .digitall .symbols symbol .line.rightbottom {
+            right: 0;
+            bottom: var(--da-line-thickness_h);
+        }
+
+
+.digitall .symbols symbol .dot {
+    border-radius: var(--da-dot-radius);
+    width: var(--da-dot-width);
+    height: var(--da-dot-height);
+}
+    .digitall .symbols symbol .dot.top {
+        top: var(--da-dot-top-top);
+        left: var(--da-dot-top-left);
+    }
+    .digitall .symbols symbol .dot.bottom {
+        bottom: var(--da-dot-bottom-bottom);
+        left: var(--da-dot-bottom-left);
+    }
+
+
+.digitall .symbols symbol .slash {
+    border-radius: var(--da-line-radius);
+    height: var(--da-slash-length);
+    width: var(--da-slash-thickness);
+    transform: rotate(var(--da-slash-angle));
+}
+    .digitall .symbols symbol .slash.top {
+        top: var(--da-slash-top-top);
+        left: var(--da-slash-top-left);
+    }
+    .digitall .symbols symbol .slash.bottom {
+        bottom: var(--da-slash-bottom-bottom);
+        left: var(--da-slash-bottom-left);
+    }
+
+
+/* light lines/elements according to current symbol */
+
+/* 0 */
+.digitall .symbols .digit-0 .line.top,
+.digitall .symbols .digit-0 .line.righttop,
+.digitall .symbols .digit-0 .line.rightbottom,
+.digitall .symbols .digit-0 .line.leftbottom,
+.digitall .symbols .digit-0 .line.lefttop,
+.digitall .symbols .digit-0 .line.bottom    {
+    background: var(--da-el-lit-background-color);
+    border: var(--da-el-lit-border);
+    box-shadow: var(--da-el-lit-boxshadow);
+}
+/* 1 */
+.digitall .symbols .digit-1 .line.righttop,
+.digitall .symbols .digit-1 .line.rightbottom   {
+    background: var(--da-el-lit-background-color);
+    border: var(--da-el-lit-border);
+    box-shadow: var(--da-el-lit-boxshadow);
+}
+/* 2 */
+.digitall .symbols .digit-2 .line.top,
+.digitall .symbols .digit-2 .line.righttop,
+.digitall .symbols .digit-2 .line.middle,
+.digitall .symbols .digit-2 .line.leftbottom,
+.digitall .symbols .digit-2 .line.bottom    {
+    background: var(--da-el-lit-background-color);
+    border: var(--da-el-lit-border);
+    box-shadow: var(--da-el-lit-boxshadow);
+}
+/* 3 */
+.digitall .symbols .digit-3 .line.top,
+.digitall .symbols .digit-3 .line.righttop,
+.digitall .symbols .digit-3 .line.middle,
+.digitall .symbols .digit-3 .line.rightbottom,
+.digitall .symbols .digit-3 .line.bottom    {
+    background: var(--da-el-lit-background-color);
+    border: var(--da-el-lit-border);
+    box-shadow: var(--da-el-lit-boxshadow);
+}
+/* 4 */
+.digitall .symbols .digit-4 .line.lefttop,
+.digitall .symbols .digit-4 .line.righttop,
+.digitall .symbols .digit-4 .line.middle,
+.digitall .symbols .digit-4 .line.rightbottom   {
+    background: var(--da-el-lit-background-color);
+    border: var(--da-el-lit-border);
+    box-shadow: var(--da-el-lit-boxshadow);
+}
+/* 5 */
+.digitall .symbols .digit-5 .line.top,
+.digitall .symbols .digit-5 .line.lefttop,
+.digitall .symbols .digit-5 .line.middle,
+.digitall .symbols .digit-5 .line.rightbottom,
+.digitall .symbols .digit-5 .line.bottom    {
+    background: var(--da-el-lit-background-color);
+    border: var(--da-el-lit-border);
+    box-shadow: var(--da-el-lit-boxshadow);
+}
+/* 6 */
+.digitall .symbols .digit-6 .line.top,
+.digitall .symbols .digit-6 .line.lefttop,
+.digitall .symbols .digit-6 .line.middle,
+.digitall .symbols .digit-6 .line.leftbottom,
+.digitall .symbols .digit-6 .line.bottom,
+.digitall .symbols .digit-6 .line.rightbottom   {
+    background: var(--da-el-lit-background-color);
+    border: var(--da-el-lit-border);
+    box-shadow: var(--da-el-lit-boxshadow);
+}
+/* 7 */
+.digitall .symbols .digit-7 .line.top,
+.digitall .symbols .digit-7 .line.righttop,
+.digitall .symbols .digit-7 .line.rightbottom   {
+    background: var(--da-el-lit-background-color);
+    border: var(--da-el-lit-border);
+    box-shadow: var(--da-el-lit-boxshadow);
+}
+/* 8 */
+.digitall .symbols .digit-8 .line.top,
+.digitall .symbols .digit-8 .line.lefttop,
+.digitall .symbols .digit-8 .line.righttop,
+.digitall .symbols .digit-8 .line.middle,
+.digitall .symbols .digit-8 .line.leftbottom,
+.digitall .symbols .digit-8 .line.rightbottom,
+.digitall .symbols .digit-8 .line.bottom    {
+    background: var(--da-el-lit-background-color);
+    border: var(--da-el-lit-border);
+    box-shadow: var(--da-el-lit-boxshadow);
+}
+/* 9 */
+.digitall .symbols .digit-9 .line.top,
+.digitall .symbols .digit-9 .line.lefttop,
+.digitall .symbols .digit-9 .line.righttop,
+.digitall .symbols .digit-9 .line.middle,
+.digitall .symbols .digit-9 .line.rightbottom,
+.digitall .symbols .digit-9 .line.bottom    {
+    background: var(--da-el-lit-background-color);
+    border: var(--da-el-lit-border);
+    box-shadow: var(--da-el-lit-boxshadow);
+}
+/* : */
+.digitall .symbols .symbol-semicolon .dot{
+    background: var(--da-el-lit-background-color);
+    border: var(--da-el-lit-border);
+    box-shadow: var(--da-el-lit-boxshadow);
+}
+/* / */
+.digitall .symbols .symbol-slash .slash {
+    background: var(--da-el-lit-background-color);
+    border: var(--da-el-lit-border);
+    box-shadow: var(--da-el-lit-boxshadow);
+}
+
+
+

@@ -27,7 +27,7 @@ let Xplayer = {
      * Set config, handle incoming/external json, set defaults
      * @param setup json
      */
-    configure: function(setup) {
+    configure: (setup) => {
         if (typeof setup === 'undefined')
             setup = {};
 
@@ -85,9 +85,7 @@ let Xplayer = {
     },
 
 
-    initialize: function() {
-
-        Xplayer.configure(XplayerConfig);
+    initialize: () => {
 
         // Embed player instances
         Xplayer.config?.tracks.forEach((fileConf, i) => {
@@ -193,7 +191,7 @@ let Xplayer = {
         });
     
         
-        $(document).on('keydown',function(e) {
+        $(document).on('keydown', (e) => {
             if (e.keyCode === 27) {     // on escape key press - pause
                 $('#ctrl_pause').click();
             }
@@ -203,10 +201,10 @@ let Xplayer = {
         // TIMELINE / SEEK
         let timeline = $('#seek-slider');
         
-        timeline.on('seek', function(e) {
+        timeline.on('seek', e => {
             console.log('SEEK');
         });
-        timeline.on('click', function(e) {
+        timeline.on('click', e => {
             // todo: check if ready
             
             let pos = e.pageX - timeline.offset().left; // Cursor position
@@ -300,33 +298,23 @@ let Xplayer = {
         });
         
         // text input
-        $('input#crossfader-ab-value').change((e) => {
-            let value;
-            
-            // v1
-            // value = $(e.target).map(function() {
-            //     return $(this).val();
-            // })[0];
-            
+        $('input#crossfader-ab-value').change(e => {
+            // v1  // value = $(e.target).map(() => { return $(this).val(); })[0];
             // v2
-            value = $(e.target).prop('value');
-            
-            // v3 - doesn't work!
-            // value = $(e.target[0]).val()); 
-            
-            // v4
-            // value = $(e.target)[0].value;
+            let value = $(e.target).prop('value');
+            // v3 - doesn't work!  // value = $(e.target[0]).val());
+            // v4  // value = $(e.target)[0].value;
 
             $('#crossfader-ab').slider( 'option', 'value', value);
         });
         
-        $('.appversion').bind('dblclick', ()=>{
-           $('body').toggleClass('dev-mode');
+        $('.appversion').bind('dblclick', () => {
+            $('body').toggleClass('dev-mode');
         });
     },
                 
     
-    loadFile: function(i, fileConf) {
+    loadFile: (i, fileConf) => {
         
         // check input data
         let filename = fileConf?.filename;
@@ -349,7 +337,7 @@ let Xplayer = {
     },
 
     
-    crossfaderSetValue: function(value)   {
+    crossfaderSetValue: (value) => {
 
         value = parseInt(value);
         if (value > -4  &&  value < 4)    {
@@ -374,7 +362,7 @@ let Xplayer = {
      * @param fileConf
      * @param filename
      */
-    setReferenceInstance: function(fileConf, filename) {
+    setReferenceInstance: (fileConf, filename) => {
         
         if (typeof filename !== 'string'  ||  !filename)  {
             return console.error('No filename specified!', fileConf);
@@ -426,7 +414,8 @@ let Xplayer = {
             // set overall common duration
             if (!Xplayer.duration)  {
                 Xplayer.duration = el_player[0].duration;
-                $('#time_duration').text(Xplayer.formatTime(Xplayer.duration));
+                $('#time_duration').data('time', Xplayer.formatTime(Xplayer.duration))
+                    .trigger('datachange');
             }
         });
         
@@ -434,7 +423,8 @@ let Xplayer = {
         // update global time counter & progress bar while playing, always keep in sync with this item
         el_player[0].addEventListener('timeupdate', () => {
             // track time position 
-            $('#time_position').text(Xplayer.formatTime(el_player[0].currentTime));
+            $('#time_position').data('time', Xplayer.formatTime(el_player[0].currentTime))
+                    .trigger('datachange');
             
             // progress bar indicator
             const percentagePosition = (100 * el_player[0].currentTime) / el_player[0].duration;
@@ -447,14 +437,14 @@ let Xplayer = {
     },
 
 
-    formatTime: function (seconds) {
+    formatTime: (seconds) => {
         let durationMinutes = parseInt(seconds / 60, 10);
         let durationSeconds = parseInt(seconds % 60);
         return durationMinutes + ':' + durationSeconds.toString().padStart(2, '0');
     },
     
     
-    initFancyVolumes: function () {
+    initFancyVolumes: () => {
         $('.fancy-volume.is-loading').each( (i, el) => {
             let mainInput = $('#'+$(el).attr('id').replace('__fancy', ''));
             Xplayer.setFancyVolumeState(el, mainInput, $(mainInput)[0].value);
@@ -463,7 +453,7 @@ let Xplayer = {
     },
     
     
-    setFancyVolumeState: function (el, mainInput, value) {
+    setFancyVolumeState: (el, mainInput, value) => {
         
         let valuePercent = value ?? $(mainInput)[0].value;   // value
         if (valuePercent < 0)   {
@@ -522,10 +512,10 @@ let Xplayer = {
     },
 
     
-    initReelAnimation: function ()  {
+    initReelAnimation: () => {
+        // just for fun
         $('#animated_reel .power').on('dblclick', () => {
-            $('#animated_reel').toggleClass('playing');
-            $('#animated_reel').toggleClass('stopped');
+            $('#animated_reel').toggleClass('playing').toggleClass('stopped');
         });
     },
 
@@ -533,7 +523,7 @@ let Xplayer = {
     /**
      * link range inputs with their text fields
      */
-    linkRangeInputs: function()    {
+    linkRangeInputs: () => {
         $( 'input[type=range]' ).each( (i, el) => {
             // take range input and find its text input by id
             let range = $(el),
@@ -545,7 +535,7 @@ let Xplayer = {
                 range.val( value );
                 Xplayer.setFancyVolumeState($('#'+text.prop('id')+'__fancy'), text, value)
             });
-            range.on( 'input change', function(){
+            range.on( 'input change', () => {
                 text.val( range.val() );
                 text.trigger('change');
                 Xplayer.setFancyVolumeState($('#'+text.prop('id')+'__fancy'), text, range.val())
@@ -560,7 +550,7 @@ let Xplayer = {
      * @param filename
      * @param title
      */
-    addSelectableItem: function(fileConf, filename, title) {
+    addSelectableItem: (fileConf, filename, title) => {
 
         // build markup
         let el_header = $('<h4>').text(title);
@@ -644,7 +634,7 @@ let Xplayer = {
      * @param load_as - target container / item role ('A' = track A, 'B' = track B, or 'backtrack'). expected values must match .instances object keys
      * @param callback
      */
-    embedInstance: function(fileConf, filename, title, load_as, callback) {
+    embedInstance: (fileConf, filename, title, load_as, callback) => {
 
         if (typeof Xplayer.instances[load_as] === 'undefined')  {
             return console.error('Wrong load_as value ('+load_as+'). Only predefined container/role values are possible');
@@ -708,14 +698,14 @@ let Xplayer = {
         
         
         
-        ctrl_volume_linked.bind('input change', function (){
+        ctrl_volume_linked.bind('input change', () => {
              let value = parseInt($(ctrl_volume_linked)[0].value);
              let volume = value ? Math.min(Math.max(value / 100, 0), 1) : 0;
              el_player[0].volume = volume;
         });
 
                         
-                        ctrl_volume_fancy.bind('mousedown', function(event)  {
+                        ctrl_volume_fancy.bind('mousedown', (event) => {
 
                             let startY = event.clientY;
 
@@ -853,7 +843,7 @@ let Xplayer = {
 
         // we must check, to run it only once
         let callbackCalled = false;
-        el_player[0].addEventListener('canplay', function() {
+        el_player[0].addEventListener('canplay', () => {
             instance_box.removeClass('state_loading');
 
             if (callbackCalled === false)   {
@@ -928,5 +918,15 @@ let Xplayer = {
 (() => {
     'use strict'
 
+    Xplayer.configure(XplayerConfig);
     Xplayer.initialize();
+    
+    DigitAll.configure({
+        valueDataKey: 'time',
+        dev: true/*XplayerConfig.dev*/,
+    });
+    DigitAll.initialize({
+        applyTo: '.digitall',
+        listenUpdate: '.digitall.listenUpdate',
+    });
 })()

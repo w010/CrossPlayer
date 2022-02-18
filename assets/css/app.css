@@ -636,15 +636,41 @@ input.slider-value:focus   {
 
 
 
+/* DIGITALL */
+
+:root {
+    /*--da-line-radius: 30% 60% 30% 60%;*/
+}
+
+.digitall .symbols symbol   {
+}
+
+.timer  {
+    --da-symbol-width: 0.95em;
+        /* recalculate height! */
+    --da-symbol-height: calc(var(--da-symbol-width) * var(--da-symbol-size-ratio));
+    --da-symbol-margin: 0 0.1em;
+    
+    --da-el-scale: .3;
+        /* recalculate boxshadow and all other using el-scale */
+    --da-el-lit-boxshadow: var(--da-el-lit-boxshadow-color) calc(3px * var(--da-el-scale)) calc(5px * var(--da-el-scale)) calc(15px * var(--da-el-scale)) calc(7px * var(--da-el-scale));
+    --da-el-lit-border: calc(1px  *  var(--da-el-scale)) solid var(--da-el-lit-border-color);
+    
+    
+    margin: 0 auto;
+    text-align: center;
+}
+
+
 
 .dev, .bg-dark .dev    {
-    display: none;
+    display: none !important;
     border-color: #fa7d18;
     color: #fa7d18;
 }
 
 .dev-mode .dev {
-    display: initial;
+    display: initial !important;
 }
 
 
