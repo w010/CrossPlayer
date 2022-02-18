@@ -393,7 +393,7 @@ input.slider-value:focus   {
 }
 
 .play-item img   {
-    /*width: 80px;*/
+    width: 100%;
     height: auto;
     /*border: 1px solid #656565;*/
     border: 1px solid #777;
