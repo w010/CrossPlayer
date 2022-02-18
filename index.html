@@ -16,7 +16,7 @@
 	
 	
 </head>
-<body class="bg-dark  dev-modex">
+<body class="bg-dark  stopped  dev-modex">
     
     <header class="navbar sticky-top text-white flex-md-nowrap p-3">
 
@@ -54,6 +54,10 @@
                 <div class="position-sticky pt-3">
                     <ul class="nav flex-column">
 						<li class="nav-item">
+							<h5 class="nav-head alt">Collections:</h5>
+						</li>
+						<!--#BOUNDARY_MENU#-->
+						<li class="nav-item">
 							<a aria-current="page" class="nav-link active" href="">
 								CrossPlayer
 							</a>
@@ -63,6 +67,7 @@
 								wolo.pl
 							</a>
 						</li>
+						<!--#BOUNDARY_MENU#-->
                     </ul>
                 </div>
             </nav>
@@ -73,7 +78,9 @@
             
             <main class="col-md-10 col-lg-11 ms-sm-auto px-md-4">
                 
+				<div id="collection_description"></div>
 
+				
 				
 				<div class="results">
 					<!--<p>[some notice]</p>-->
@@ -84,10 +91,14 @@
 				<div class="row">
 					
 					<div class="dev" id="container-instance-timebase">
-						<h3>[TIMEBASE]</h3>
+						<h3 class="alt">[TIMEBASE]</h3>
 					</div>
 					<div class="col-lg-12__  col-lg-5" id="container-instance-backtrack">
-						<h3>Backtrack</h3>
+						<h3 class="alt">Backtrack</h3>
+						
+						<div class="rounded-3 p-3 play-item dropzone">
+							<h3>empty</h3>
+						</div>
 					</div>
 					<div class="col-lg-2">
 					</div>
@@ -111,7 +122,11 @@
 				<div class="row">
 					
 					<div class="col-lg-5" id="container-instance-A">
-						<h3>A</h3>
+						<h3 class="alt">A</h3>
+
+						<div class="rounded-3 p-3 play-item dropzone">
+							<h3>empty</h3>
+						</div>
 					</div>
 					<div class="col-lg-2" id="crossfader">
 
@@ -127,7 +142,7 @@
 
 					</div>
 					<div class="col-lg-5" id="container-instance-B">
-						<h3>B</h3>
+						<h3 class="alt">B</h3>
 						
 						<div class="rounded-3 p-3 play-item dropzone">
 							<h3>empty</h3>
@@ -180,7 +195,7 @@
 					
 
 				<br><br>
-				<p>Available tracks:</p>
+				<h5 class="nav-headxx alt">Available tracks:</h5>
 
 				<div class="row align-items-md-stretch">
 					<div class="col-lg-6" id="container-all-tracks">
@@ -223,7 +238,7 @@
     
     
 	<!--#BOUNDARY_CONFIG#-->
-	<script src="config.js">
+	<script src="data/default/config.js">
 		/**
 		 * Details about config structure and option names: 
 		 *  - see assets/js/app.js

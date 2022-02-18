@@ -1,4 +1,8 @@
 
+:root {
+    --wtp-blue: #6c9ee9;
+}
+
 
 body {
     font-size: 1.2rem;
@@ -8,6 +12,10 @@ body {
 
 a   {
     text-decoration: none;
+}
+
+.alt    {
+    color: var(--wtp-blue);
 }
 
 /*
@@ -45,7 +53,13 @@ a   {
 
 .sidebar .nav-link.active,
 .sidebar .nav-link:hover {
-    color: #007bff;
+    color: #00ff95;
+}
+
+.nav-head {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    font-style: italic;
 }
 
 
@@ -375,7 +389,7 @@ input.slider-value:focus   {
 }
 
 .play-item img   {
-    /*width: 80px;*/
+    width: 80px;
     height: auto;
     /*border: 1px solid #656565;*/
     border: 1px solid #777;

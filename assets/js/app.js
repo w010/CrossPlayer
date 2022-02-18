@@ -16,6 +16,9 @@ let Xplayer = {
     // mainly information, in general we expect them all the same length
     duration: 0,
 
+    // to make sure it already exist before reading value
+    crossfaderReady: false,
+
     // configuration of current collection data
     config: {},
 
@@ -32,26 +35,31 @@ let Xplayer = {
             image_default:      setup?.image_default  
                     ??  'assets/images/music-note-beamed_gray.svg',
 
-            // use [audio filename].[this extension], as the image  
+                // use [audio filename].[this extension], as the image  
             image_filename_auto_ext:        setup?.image_filename_auto_ext 
                     ??     'jpg',
 
             collection_title:       setup?.collection_title
                     ??      'Default comparison',
 
+            collection_description:       setup?.collection_description
+                    ??      'Example collection, see README how to make own',
+
             // todo: auto trailing slash (now is required)
             data_dir:   setup?.data_dir
                     ??  './data/',
 
+                // debug / advanced view
             dev: false,
 
-            // todo:
-	        crossfader_initial: -100,
+                // start value
+            crossfader_initial:     setup?.crossfader_initial
+                    ??  -100,
 
             tracks:     setup?.tracks   
                     ?? [
                     /*{
-                        // * FILE CONFIG REF:   // todo: check & update
+                        // * FILE CONFIG REF:
 
                             // available values: 'A', 'B', 'backtrack'     // this is used to build '#container-instance-NNN' selector!
                         'load_as': 'backtrack',
@@ -61,6 +69,7 @@ let Xplayer = {
 
                             // specify image filename explicitly, if not auto
                         'image': '_player-test-drum.png',
+                        'image_absolute': '',
 
                             // track title
                         'title': 'Rhythm-drums',
@@ -77,11 +86,8 @@ let Xplayer = {
 
 
     initialize: function() {
-        
-        //console.log(XplayerConfig);
-        //console.log(Xplayer.config);
+
         Xplayer.configure(XplayerConfig);
-        //console.log(Xplayer.config);
 
         // Embed player instances
         Xplayer.config?.tracks.forEach((fileConf, i) => {
@@ -94,6 +100,7 @@ let Xplayer = {
         Xplayer.initReelAnimation();
         
         $('#collection_title').text(' - ' + Xplayer.config.collection_title);
+        $('#collection_description').append($('<p>'+ Xplayer.config.collection_description +'</p>'));
 
         // Bind globals
         // todo: make all these calls as foreach
@@ -196,6 +203,9 @@ let Xplayer = {
         // TIMELINE / SEEK
         let timeline = $('#seek-slider');
         
+        timeline.on('seek', function(e) {
+            console.log('SEEK');
+        });
         timeline.on('click', function(e) {
             // todo: check if ready
             
@@ -222,7 +232,7 @@ let Xplayer = {
             range: 'min',
             min: -100,
             max: 100,
-            value: 0,
+            value: Xplayer.config.crossfader_initial,
             animate: 'fast',
             classes: {
                 'ui-slider': 'crossfader',
@@ -232,7 +242,8 @@ let Xplayer = {
             // change: () => {   // start: () => {   // stop: () => {
             create: () => {
                 // reset and append some additional markup
-                $('#crossfader-ab-value').val(0);
+                Xplayer.crossfaderReady = true;
+                Xplayer.crossfaderSetValue(Xplayer.config.crossfader_initial);
                 $('#crossfader-ab .fader-handle').append(
                     $('<span class="inner">'),
                     $('<span class="cut">')
@@ -284,22 +295,7 @@ let Xplayer = {
                 
             },
             slide: (e, ui) => {
-                let value = parseInt(ui.value);
-                if (ui.value > -4  &&  ui.value < 4)    {
-                    value = 0;
-                    $('#crossfader-ab').slider( 'option', 'value', 0);
-                }
-                $('#crossfader-ab-value').val(value);
-                
-                // apply changes to tracks volume balance
-
-                $('#volume-slider_A')
-                    .val(Math.min(Math.max(100 - value, 0), 100))
-                    .trigger('change');
-
-                $('#volume-slider_B')
-                    .val(Math.min(Math.max(100 + value, 0), 100))
-                    .trigger('change');
+                Xplayer.crossfaderSetValue(ui.value);
             },
         });
         
@@ -353,6 +349,24 @@ let Xplayer = {
     },
 
     
+    crossfaderSetValue: function(value)   {
+
+        value = parseInt(value);
+        if (value > -4  &&  value < 4)    {
+            value = 0;
+        }
+        $('#crossfader-ab-value').val(value);
+        $('#crossfader-ab').slider( 'option', 'value', value);
+
+        // apply changes to tracks volume balance
+        $('#volume-slider_A')
+            .val(Math.min(Math.max(100 - value, 0), 100))
+            .trigger('change');
+
+        $('#volume-slider_B')
+            .val(Math.min(Math.max(100 + value, 0), 100))
+            .trigger('change');
+    },
     
     /**
      * Insert and keep ref to the base time master hidden track, which rules them all
@@ -854,6 +868,14 @@ let Xplayer = {
         container.append(instance_box);
         Xplayer.linkRangeInputs();
         Xplayer.initFancyVolumes();
+
+        // on embed respect crossfader position
+        // if crossfader is ready (usually when use button play as...)
+        if (Xplayer.crossfaderReady)    {
+            // reinit crossfader with its current val - it will handle volumes on A and B
+            //faderValue = $('#crossfader-ab').slider( 'option', 'values')
+            Xplayer.crossfaderSetValue($('#crossfader-ab-value').val());
+        }
 
         
         // store operational info

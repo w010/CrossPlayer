@@ -1,16 +1,16 @@
 let XplayerConfig =
-
-// JSON
 {
-	"collection_title": 	"Humbuckers compare",
+	"collection_title": 	"Default comparison",
+
+	"collection_description": "See README",
 
 	"image_default": 	"assets/images/music-note-beamed_gray.svg",
 
 	"image_filename_auto_ext": 	"jpg",
 
-	"data_dir": 	"./data/humbuckers/",
+	"data_dir": 	"./data/default/",
 	
-	"dev": true,
+	"dev": false,
 
 	"crossfader_initial": -50,
 
@@ -18,24 +18,22 @@ let XplayerConfig =
 	"tracks": [
 
 				{
-					"title": "Rhythm-drums 1",
+					"title": "Rhythm",
 					"filename": "_player-test-drum.mp3",
 					"image_absolute": "assets/images/icon_drums.svg",
 
 					"load_as": "backtrack"
 				},
 				{
-					"title": "Flame / G&B - Bridge",
+					"title": "Test guitar 1",
 					"filename": "_player-test-guitar.mp3",
-					"image": "flame-b.jpg",
 					"description": "Lorem ipsum dolor sit amet...",
 
 					"load_as": "A"
 				},
 				{
+					"title": "Test guitar 2",
 					"filename": "_player-test-guitar2.mp3",
-					"title": "Flame / G&B - faked North",
-					"image": "flame-n.jpg",
 
 					"load_as": "B"
 				}

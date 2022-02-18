@@ -1,6 +1,7 @@
 .idea
 *.lnk
-/data/
+data/
+!data/default/
 *.mp3
 *.wav
 info.php
