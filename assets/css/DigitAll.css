@@ -3,6 +3,7 @@
 
     --da-el-background: #2d3b1347;
     --da-el-border: 1px solid #414141c2;
+    --da-el-transition: border-color .2s, background-color .2s;
     --da-el-lit-background-color: #159f5e;
         /*--da-el-lit-border: 1px solid #00ff95;*/
     --da-el-scale: 1;
@@ -78,6 +79,7 @@
     position: absolute;
     background: var(--da-el-background);
     border: var(--da-el-border);
+    transition: var(--da-el-transition);
 }
 
 .digitall .symbols symbol .line {

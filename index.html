@@ -176,17 +176,17 @@
 
 					</div>
 					<div class="col-lg-2">
+						
+					</div>
+					<div class="col-lg-5">
 
 						<!-- TIMER -->
 						<div class="timer">
 							<span id="time_position" class="time digitall listenUpdate" data-time="0:00">0:00</span> 
-							<span class="time digitall" data-time="/"></span> 
+							<span class="time digitall separator" data-time="/"></span> 
 							<span id="time_duration" class="time digitall listenUpdate" data-time="0:00">0:00</span>
 						</div>
-
-					</div>
-					<div class="col-lg-5">
-
+						
 						<!-- MASTER VOLUME -->
 						<!--<input type="range" id="volume-slider" max="100" value="100">-->
 
@@ -200,6 +200,7 @@
 						<span class="time digitall" data-time="0:12"></span>
 						<span class="time digitall" data-time="3/45"></span>
 						<span class="time digitall" data-time="6789"></span>
+						&nbsp;&nbsp;<span class="time digitall cycle" data-time="0"></span>
 					</div>
                 </div>
 				
@@ -217,10 +218,21 @@
 					
 
 
-				<h5 class="nav-headxx alt">Available tracks:</h5>
 
 				<div class="row align-items-md-stretch">
-					<div class="col-lg-6" id="container-all-tracks">
+					<div class="col-lg-6">
+						
+						<h5 class="nav-headxx alt">Available tracks:</h5>
+						<div id="container-all-tracks"></div>
+
+					</div>
+					<div class="col-lg-6">
+						
+						<h5 class="nav-headxx alt">Keyboard:</h5>
+						<dl>
+							<dt>Esc</dt>
+							<dd>Pause</dd>
+						</dl>
 						
 					</div>
 				</div>

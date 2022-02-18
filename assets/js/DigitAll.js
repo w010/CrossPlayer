@@ -1,6 +1,7 @@
 /**
- * Digit LCD Display
- * v0.1
+ * DigitAll - Digit Symbol Analog LCD Display
+* 
+ * v0.2
  * 
  * wolo.pl '.' studio
  * 2022
@@ -38,8 +39,12 @@ let DigitAll = {
             setup = {};
 
         DigitAll.config = {
-            valueDataKey:      setup?.valueDataKey  
+                // property data-[xxx] which keeps item's raw value (string)
+            valueDataKey:      setup?.valueDataKey
                         ??  'value',
+                // in dev mode init optional auto-cycle symbol (selector: '.test '+applyTo+'.cycle')
+            cycleTest:          setup?.cycleTest
+                        ??  false,
         }
 
         if (setup?.dev)
@@ -56,19 +61,36 @@ let DigitAll = {
      */
     initialize: (selectors) => {
 
+        let applyTo = selectors?.applyTo  ||  '.digitall';
+        let listenUpdate = selectors?.listenUpdate  ||  '.digitall.listenUpdate';
+
         // replace time digits in predefined elements
-        $(selectors?.applyTo  ??  '.digitall')
-            .each( (i, el) => {
+        $(applyTo).each( (i, el) => {
                 let value = $(el).data(DigitAll.config.valueDataKey);
                 if (DigitAll.dev)   console.info('- apply DigitAll to: '+selectors?.applyTo, el);
                 DigitAll.replaceDigitsAndSymbolsInElement(el, value);
-            });
+        });
         
-        $(selectors?.listenUpdate  ??  '.digitall.listenUpdate')
-            .each( (i, el) => {
+        $(listenUpdate).each( (i, el) => {
                 if (DigitAll.dev)   console.info('- listen update value for: '+selectors?.listenUpdate, el);
                 DigitAll.listenUpdate(el);
+        });
+
+        // make one of test symbols auto-cycle value
+        if (DigitAll.dev)   {
+            $('.test '+applyTo+'.cycle').each( (i, el) => {
+                let testChars = '0123456789:/';
+                let d = 0;
+                let cycle = setInterval(() => {
+                    let value = testChars[d];
+                    //d++;
+                    if (++d >= testChars.length)    {
+                        d = 0;
+                    }
+                    DigitAll.replaceDigitsAndSymbolsInElement(el, value);
+                }, 1000);
             });
+        }
     },
 
 
@@ -81,28 +103,80 @@ let DigitAll = {
     },
 
 
+    /**
+     * Replace innerHtml of element [el] with rendered symbols markup representation of [value] 
+     * @param el DOM element
+     * @param value String
+     * @return {boolean}
+     */
     replaceDigitsAndSymbolsInElement: (el, value) => {
 
         let timeValue = (value ?? '')+'';
         // keep only: 0-9:/
         timeValue = timeValue.replace(/[^0-9:\/]/gi, '');
         if (!timeValue) {
-            return;
+            return false;
         }
         if (DigitAll.dev)   console.info('- set time value: '+timeValue, el);
 
-        let digitalSymbols = $('<div class="symbols">');
-        for (let d = 0; d < timeValue.length; d++) {
-            console.log(timeValue.charAt(d));
-            digitalSymbols.append(
-                DigitAll.renderSymbol(timeValue.charAt(d))
-            );
+        // check if symbols already exist
+        let digitalSymbols = $(el).find('.symbols symbol');
+        let digitalSymbolsWrapper;
+        let d = 0;
+
+
+        if (timeValue.length === digitalSymbols.length) {
+            // if number of chars vs. symbol dom elements didn't change, only update them
+            if (DigitAll.dev)   console.info('- symbols exists, only update class/data-value where needed');
+
+            for (d; d < timeValue.length; d++) {
+                let symbolValue = timeValue.charAt(d);
+
+                // actually update only these which has different value now, leave others
+                if ($(digitalSymbols[d]).data('value') !== symbolValue) {
+                    $(digitalSymbols[d])
+                            .attr('class', DigitAll.getSymbolClass(symbolValue))
+                            .attr('title', symbolValue)
+                            .data('value', symbolValue);
+                }
+            }
+            return !!d;
         }
+        else    {
+            // otherwise - insert / replace with new
+            digitalSymbolsWrapper = $('<div class="symbols">');
 
+            for (d; d < timeValue.length; d++) {
+                let symbolValue = timeValue.charAt(d);
 
-        $(el).html(digitalSymbols);
+                digitalSymbolsWrapper.append(
+                    DigitAll.renderSymbol(symbolValue)
+                );
+            }
+            $(el).html(digitalSymbolsWrapper);
+            return !!d;
+        }
     },
 
+
+    /**
+     * Build single symbol markup
+     * @param symbolChar String
+     * @return String
+     */
+    getSymbolClass: symbolChar => {
+
+        if (/[0-9]/.test(symbolChar)) {
+            return 'digit digit-'+symbolChar;
+        }
+        if (/[:]/.test(symbolChar)) {
+            return 'symbol-semicolon';
+        }
+        if (/[\/]/.test(symbolChar)) {
+            return 'symbol-slash';
+        }
+        return '';
+    },
 
     /**
      * Build single symbol markup
@@ -117,20 +191,10 @@ let DigitAll = {
             console.error('Cannot render symbol: '+symbol+', invalid value', symbolValue);
             return $('<symbol class="symbol-error dev"></symbol>');
         }
-        //console.log(symbolValue);
+        let symbolClass = DigitAll.getSymbolClass(symbolValue) || 'unknown';
 
-        let symbolClass = '';
-        if (/[0-9]/.test(symbolValue)) {
-            symbolClass = 'digit digit-'+symbolValue;
-        }
-        else if (/[:]/.test(symbolValue)) {
-            symbolClass = 'symbol-semicolon';
-        }
-        else if (/[\/]/.test(symbolValue)) {
-            symbolClass = 'symbol-slash';
-        }
-        
-        return $('<symbol class="symbol '+symbolClass+'" title="'+symbolValue+'">')
+        return $('<symbol class="'+symbolClass+'" title="'+symbolValue+'">')
+                .data('value', symbolValue)
                 .append(
                     $('<div class="el line top horizontal">'),
                     $('<div class="el line middle horizontal">'),
