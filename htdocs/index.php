@@ -2,6 +2,16 @@
 
 $boot = function() {
 
+    // init
+    $dataDir = './data';
+    $current = 'default';
+
+    $template = file_get_contents('index.html');
+    $collections = [];
+    $markupMenu = '';
+
+
+
     /**
      * Replace subpart of given template, expects two boundaries for determine subpart
      * @param string $content
@@ -20,34 +30,43 @@ $boot = function() {
     }
 
     /**
-     * Read js config files and try to parse as json
-     * @param string $file
+     * Read & parse to array given config file path
+     * @param string $filePath Path
+     * @param bool $fixJsArraysToParseAsJson Read js config files and try to parse as json
      * @return array
      */
-    function readConfig($file): array {
-        $content = file_get_contents($file);
-        $content = str_replace('let XplayerConfig =', '', $content);
-        $json = json_decode($content, true);
+    function readCollectionConfig($filePath, $fixJsArraysToParseAsJson = false): array {
+        if (!file_exists($filePath)  ||  !is_file($filePath))
+            return [];
+
+        $content = @file_get_contents($filePath) ?? '';
+        if ($fixJsArraysToParseAsJson)  {
+            $content = str_replace('let XplayerConfig =', '', $content);
+        }
+        $json = json_decode(trim($content), true);
         return is_array($json) ? $json : [];
     }
 
 
 
 
-    // init
-    $template = file_get_contents('index.html');
-    $dataDir = './data';
-    $collections = [];
-    $markupMenu = '';
-    $current = 'default';
 
 
     // Read subdirs of /data
-    $subdirs = array_diff(scandir($dataDir) ?? [], ['.', '..']); 
+    $subdirs = array_diff(scandir($dataDir) ?? [], ['.', '..']);
 
     foreach($subdirs as $subdir)    {
-        // read config
-        $collections[$subdir] = readConfig($dataDir.'/'.$subdir.'/config.js');
+        $path = $dataDir.'/'.$subdir.'/';
+        if (!is_dir($path))
+            continue;
+
+        // look inside for config file
+        if (file_exists($path.'config.json'))   {
+            $collections[$subdir] = readCollectionConfig($path.'config.json');
+        }
+        else if (file_exists($path.'config.js'))    {
+            $collections[$subdir] = readCollectionConfig($path.'config.js', true);
+        }
     }
 
 

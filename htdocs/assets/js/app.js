@@ -100,9 +100,9 @@ let Xplayer = {
 
         Xplayer.linkRangeInputs();
         Xplayer.initFancyVolumes();
-        Xplayer.initReelAnimation();
+        Xplayer.initAnimatedReel();
         
-        $('#collection_title').text(' - ' + Xplayer.config.collection_title);
+        $('#collection_title').text(Xplayer.config.collection_title);
         $('#collection_description').append($('<p>'+ Xplayer.config.collection_description +'</p>'));
 
         // Bind globals
@@ -501,7 +501,7 @@ console.log('TIME FINAL: ', time);
     },
 
     
-    initReelAnimation: () => {
+    initAnimatedReel: () => {
         // just for fun
         $('#animated_reel .power').on('dblclick', () => {
             $('#animated_reel').toggleClass('spin-playing').toggleClass('spin-stopped');
@@ -587,13 +587,13 @@ console.log('TIME FINAL: ', time);
         let instance_box = $('<div class="rounded-3 p-3  play-item  master-time">');
         instance_box.append(
             $('<div class="row">').append(
-                $('<div class="col-sm-5">').append(
+                $('<div class="col-sm-8">').append(
                     el_header,
                     el_header2
                 ),
-                $('<div class="col-sm-3">')
+                $('<div class="col-sm-2">')
                 ,
-                $('<div class="col-sm-4">')
+                $('<div class="col-sm-2">')
             ),
             el_player
         );
@@ -658,7 +658,7 @@ console.log('TIME FINAL: ', time);
         let play_as_b = $('<button class="btn btn-l   play_as_b" type="button"><b>B</b></button>');
         let play_as_backtrack = $('<button class="btn btn-l   play_as_backtrack" type="button"><b>backtrack</b></button>');
         
-        let el_controls = $('<div class="controls  me-2">')
+        let el_controls = $('<div class="controls  me-2  position-absolute  bottom-0  begin-0">')
                 .append('<span class="small">Play as: &nbsp;</span>')
                 .append(play_as_a)
                 .append(play_as_b)
@@ -686,12 +686,13 @@ console.log('TIME FINAL: ', time);
         let instance_box = $('<div class="rounded-3 p-3  play-item  track-selectable">');
         instance_box.append(
             $('<div class="row">').append(
-                $('<div class="col-sm-10  col-md-10">').append(
+                $('<div class="col-9  col-sm-9  col-md-8  col-lg-9  position-relative">').append(
                     el_header,
                     el_status,
+                    $('<div class="w100  mb-5  d-block  d-md-none">'),      // todo: check if this actually helps anything || remove
                     el_controls
                 ),
-                $('<div class="col-sm-2  col-md-2 text-end">').append(
+                $('<div class="col-3  col-sm-3  col-md-4  col-lg-3">').append(
                     $('<img src="'+image+'" alt="img" class="img-fluid">')
                 ),
                 //$('<div class="col-md-4">')
@@ -784,7 +785,7 @@ console.log('TIME FINAL: ', time);
         let ctrl_mute = $('<button class="btn btn-l  ctrl_track_mute" type="button" title="MUTE track">M</button>'); 
         let ctrl_solo = $('<button class="btn btn-l  ctrl_track_solo" type="button" title="Track SOLO">S</button>'); 
         
-        let el_controls = $('<div class="controls  me-2">')
+        let el_controls = $('<div class="controls  me-2   position-absolute  bottom-0  begin-0">')
                 .append(ctrl_mute)
                 .append(ctrl_solo);
         
@@ -874,15 +875,15 @@ console.log('TIME FINAL: ', time);
         let instance_box = $('<div class="rounded-3 p-3  play-item  player-active  state_loading">');
         instance_box.append(
             $('<div class="row">').append(
-                $('<div class="col-sm-8  col-md-8">').append(
+                $('<div class="col-7  col-sm-6  col-md-7  col-lg-8  col-xl-7  position-relative">').append(
                     el_header,
                     el_status,
                     el_controls
                 ),
-                $('<div class="col-sm-2  col-md-2  text-begin   text-endxxxx">').append(
+                $('<div class="col-3  col-sm-3  col-md-3  col-lg-2  col-xl-3 ">').append(
                     $('<img src="'+image+'" alt="img" class="img-fluid">')
                 ),
-                $('<div class="col-sm-2  col-md-2">').append(
+                $('<div class="col-2  col-sm-3  col-md-2  col-lg-2  col-xl-2">').append(
                     el_controls2
                 )
             ),
