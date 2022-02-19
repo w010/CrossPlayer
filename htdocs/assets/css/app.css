@@ -325,6 +325,9 @@ audio::-webkit-media-controls-panel {
     color: #000;
 }
 
+.btn.btn-square {
+    width: 41px;    /* that keeps them square in both cases */
+}
 
 
 /* PLAY */
@@ -382,7 +385,6 @@ audio::-webkit-media-controls-panel {
 .btn.ctrl_track_mute,
 .btn.ctrl_track_solo {
     font-weight: bold;
-    width: 41px;    /* that keeps them square in both cases */
 }
 
 .btn.ctrl_track_mute:hover  {
@@ -431,7 +433,7 @@ input.slider-value:focus   {
         border: 1px solid #4f4f4f;
         border-radius: 3px;
         position: relative;
-        top: 3.0em;
+        top: 3.5em;
     }
 
 .crossfader {
@@ -550,7 +552,7 @@ input.slider-value:focus   {
     padding-top: 10px;
 }
 
-.play-item img   {
+.play-item .image   {
     width: 100%;
     height: auto;
     /*border: 1px solid #656565;*/
@@ -558,20 +560,28 @@ input.slider-value:focus   {
     filter: saturate(50%);
     transition: filter .3s;
 }
-.play-item:hover img    {
-    /*filter: saturate(100%);*/
-    filter: initial;
-}
-.play-item img[src$=".svg"]   {
-    filter: drop-shadow(3px 3px 1px rgba(50, 50, 50, .2));
-}
+    .play-item:hover .image    {
+        /*filter: saturate(100%);*/
+        filter: initial;
+    }
+    .play-item img.image[src$=".svg"],
+    .play-item object.image[data$=".svg"]   {
+        filter: drop-shadow(3px 3px 1px rgba(50, 50, 50, .2));
+    }
+    .play-item object.image  {
+        fill: #ffc720;
+        color: #ff0020;
+    }
+
 
 .play-item.state_playing    {
-    background-color: rgba(156, 255, 156, 0.24);
+    /*background-color: rgba(156, 255, 156, 0.24);*/
+    background-color: #4b5749eb;
 }
 
 .play-item.state_paused  {
-    background-color: rgba(253, 201, 118, 0.21);
+    /*background-color: rgba(253, 201, 118, 0.21);*/
+    background-color: #696552aa;
 }
 
 

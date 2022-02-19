@@ -546,81 +546,104 @@ console.log('TIME FINAL: ', time);
 
         // take first item and make it global time base hidden master player
         if (i === 0)    {
-            Xplayer.file_setReferenceInstance(fileConf, filename);
+            Xplayer.track_setReferenceInstance(fileConf, filename);
         }
 
-        Xplayer.file_addSelectableItem(fileConf, filename, title)
+        Xplayer.track_addSelectableItem(fileConf, filename, title)
         if (load_as)  {
-            Xplayer.file_embedInstance(fileConf, filename, title, load_as);
+            Xplayer.track_embedInstance(fileConf, filename, title, load_as);
         }
     },
 
 
 
     /**
+     * TODO: try to merge with embedInstance, if not many differences
      * Insert and keep ref to the base time master hidden track, which rules them all
      * Should be called only once, but it doesn't control that by itself
      * @param fileConf
      * @param filename
+     * @param callbackPlayerReady
      */
-    file_setReferenceInstance: (fileConf, filename) => {
+    track_setReferenceInstance: (fileConf, filename, callbackPlayerReady) => {
         
         if (typeof filename !== 'string'  ||  !filename)  {
             return console.error('No filename specified!', fileConf);
         }
 
-        let filenameParts = filename.split('.');
-        let fileType = filenameParts.length > 1 ? filenameParts.pop() : 'mp3';
-        let filenameBase = filenameParts.join('.');
-
         let container = $('#container-instance-timebase');
+        if (!container) {
+            return console.error('Container for host master / time base player cannot be determined - trying  #container-instance-timebase ');
+        }
+        if (typeof callbackPlayerReady !== 'function')  callbackPlayerReady = ()=>{};
+
+
+        // set some values
+
+        let audioFilenameParts = filename.split('.');
+        let audioFileType = audioFilenameParts.length > 1 ? audioFilenameParts.pop() : 'mp3';
+        let audioFilenameBase = audioFilenameParts.join('.');
+
 
         // build markup
-        let el_header = $('<h3>').text('MASTER REFERENCE PLAYER');
-        let el_header2 = $('<h5>').text(filename);
 
         let el_player = $('<audio controls preload="auto" muted class="dev">')
                 .append(
-                    $('<source src="'+ Xplayer.config.data_dir +filename+'" type="audio/'+fileType+'">'));
+                    $('<source src="'+ Xplayer.config.data_dir +filename+'" type="audio/'+audioFileType+'">'));
+
+        let el_header = $('<h3>').text('MASTER REFERENCE PLAYER');
+        let el_header2 = $('<h5>').text(filename);
 
         // in general is not visible, but keep markup for dev display / debug purposes
         let instance_box = $('<div class="rounded-3 p-3  play-item  master-time">');
+
         instance_box.append(
             $('<div class="row">').append(
-                $('<div class="col-sm-8">').append(
+                $('<div class="col-12">').append(
                     el_header,
                     el_header2
                 ),
-                $('<div class="col-sm-2">')
-                ,
-                $('<div class="col-sm-2">')
+                // $('<div class="col-2">'),
+                // $('<div class="col-2">')
             ),
             el_player
         );
 
 
         // embed in dedicated hidden box
-        container
-                .append(instance_box);
+
+        container.append(instance_box);
         
 
         // store reference to use for timing globally
+
         Xplayer.instances.time_base = {
             'el': instance_box,
             'player': el_player,
         }
 
 
-        // link with global time controls
+
+        // BIND PLAYER LISTENERS
+
+
+        // check, to run callback only once
+        let callbackCalled = false;
         el_player[0].addEventListener('canplay', () => {
             instance_box.removeClass('state_loading');
             //console.log('BASE TIME MASTER canplay');
 
+            // link with global time controls
             // set overall common duration
             if (!Xplayer.duration)  {
                 Xplayer.duration = el_player[0].duration;
                 $('#time_duration').data('time', Xplayer.formatTime(Xplayer.duration))
                     .trigger('datachange');
+            }
+            
+            if (callbackCalled === false)   {
+                callbackPlayerReady(el_player[0], instance_box);
+                callbackCalled = true;
             }
         });
         
@@ -637,8 +660,12 @@ console.log('TIME FINAL: ', time);
         });
 
         el_player[0].addEventListener('ended', () => {
-            $('#ctrl_stop').click();
+            Xplayer.transportStop();
         });
+
+
+        // finally bind other events if needed
+
     },
 
 
@@ -649,13 +676,31 @@ console.log('TIME FINAL: ', time);
      * @param filename
      * @param title
      */
-    file_addSelectableItem: (fileConf, filename, title) => {
+    track_addSelectableItem: (fileConf, filename, title) => {
+
+        if (typeof filename !== 'string'  ||  !filename)  {
+            return console.error('No filename specified!', fileConf);
+        }
+
+        let container = $('#container-all-tracks');
+        if (!container) {
+            return console.error('Container for all tracks selector cannot be determined - #container-all-tracks ');
+        }
+        if (typeof callback !== 'function')  callback = ()=>{};
+
+        // set some values
+
+        // let audioFilenameParts = filename.split('.');
+        // let audioFileType = audioFilenameParts.length > 1 ? audioFilenameParts.pop() : 'mp3';
+        // let audioFilenameBase = audioFilenameParts.join('.');
+        let imagePath = Xplayer.imageDetermine(fileConf, filename);
+
 
         // build markup
         let el_header = $('<h4>').text(title);
         
-        let play_as_a = $('<button class="btn btn-l   play_as_a" type="button"><b>A</b></button>');
-        let play_as_b = $('<button class="btn btn-l   play_as_b" type="button"><b>B</b></button>');
+        let play_as_a = $('<button class="btn btn-l btn-square  play_as_a" type="button"><b>A</b></button>');
+        let play_as_b = $('<button class="btn btn-l btn-square  play_as_b" type="button"><b>B</b></button>');
         let play_as_backtrack = $('<button class="btn btn-l   play_as_backtrack" type="button"><b>backtrack</b></button>');
         
         let el_controls = $('<div class="controls  me-2  position-absolute  bottom-0  begin-0">')
@@ -667,23 +712,10 @@ console.log('TIME FINAL: ', time);
         let el_status = $('<div class="status"><span class="indicator"></span><p></p>')
                 .append($('<p class="dev">').text(Xplayer.config.data_dir + filename));
 
-        let filenameParts = filename.split('.');
-        let fileType = filenameParts.length > 1 ? filenameParts.pop() : 'mp3';
-        let filenameBase = filenameParts.join('.');
-        let image =     // explicit image given 
-                    fileConf?.image_absolute    ??
-                        (fileConf?.image
-                            ?   Xplayer.config.data_dir + fileConf?.image
-                            :   // auto filename ext set
-                                (Xplayer.config.image_filename_auto_ext
-                                    ?   // compile image filename
-                                        Xplayer.config.data_dir  + filenameBase + '.'   + Xplayer.config.image_filename_auto_ext
-                                    :   // use default image
-                                        Xplayer.config.image_default  ?? ''
-                                )
-                        );
 
         let instance_box = $('<div class="rounded-3 p-3  play-item  track-selectable">');
+        let imageElement = Xplayer.imageElPrepare(imagePath);
+
         instance_box.append(
             $('<div class="row">').append(
                 $('<div class="col-9  col-sm-9  col-md-8  col-lg-9  position-relative">').append(
@@ -693,7 +725,7 @@ console.log('TIME FINAL: ', time);
                     el_controls
                 ),
                 $('<div class="col-3  col-sm-3  col-md-4  col-lg-3">').append(
-                    $('<img src="'+image+'" alt="img" class="img-fluid">')
+                    imageElement
                 ),
                 //$('<div class="col-md-4">')
             )
@@ -703,19 +735,19 @@ console.log('TIME FINAL: ', time);
         // bind actions
         
         play_as_a.click(() => {
-            Xplayer.file_embedInstance(fileConf, filename, title, 'A', (player) => {
+            Xplayer.track_embedInstance(fileConf, filename, title, 'A', (player) => {
                 //console.log('CALLBACK - SYNC TIME & PLAY');
-                $('#ctrl_play').click();
+                Xplayer.transportStart();
             });
         });
         play_as_b.click(() => {
-            Xplayer.file_embedInstance(fileConf, filename, title, 'B', (player) => {
-                $('#ctrl_play').click();
+            Xplayer.track_embedInstance(fileConf, filename, title, 'B', (player) => {
+                Xplayer.transportStart();
             });
         });
         play_as_backtrack.click(() => {
-            Xplayer.file_embedInstance(fileConf, filename, title, 'backtrack', (player) => {
-                $('#ctrl_play').click();
+            Xplayer.track_embedInstance(fileConf, filename, title, 'backtrack', (player) => {
+                Xplayer.transportStart();
             });
         });
 
@@ -723,8 +755,7 @@ console.log('TIME FINAL: ', time);
         
         // add item to selector
         
-        $('#container-all-tracks')
-                .append(instance_box);
+        container.append(instance_box);
     },
 
 
@@ -734,9 +765,9 @@ console.log('TIME FINAL: ', time);
      * @param filename
      * @param title
      * @param load_as - target container / item role ('A' = track A, 'B' = track B, or 'backtrack'). expected values must match .instances object keys
-     * @param callback
+     * @param callbackPlayerReady
      */
-    file_embedInstance: (fileConf, filename, title, load_as, callback) => {
+    track_embedInstance: (fileConf, filename, title, load_as, callbackPlayerReady) => {
 
         if (typeof Xplayer.instances[load_as] === 'undefined')  {
             return console.error('Wrong load_as value ('+load_as+'). Only predefined container/role values are possible');
@@ -749,41 +780,33 @@ console.log('TIME FINAL: ', time);
         if (!container) {
             return console.error('Container for player cannot be determined - trying using "load_as" value ('+load_as+') - #container-instance-\' + load_as is called');
         }
-        if (typeof callback !== 'function')  callback = ()=>{};
+        if (typeof callbackPlayerReady !== 'function')  callbackPlayerReady = ()=>{};
+
 
         // cleanup
 
         container.find('.play-item').remove();
         Xplayer.instances[load_as] = null;
 
+
         // set some values
 
-        let filenameParts = filename.split('.');
-        let fileType = filenameParts.length > 1 ? filenameParts.pop() : 'mp3';
-        let filenameBase = filenameParts.join('.');
-        let image =     // explicit image given 
-                    fileConf?.image_absolute    ??
-                        (fileConf?.image
-                            ?   Xplayer.config.data_dir + fileConf?.image
-                            :   // auto filename ext set
-                                (Xplayer.config.image_filename_auto_ext
-                                    ?   // compile image filename
-                                        Xplayer.config.data_dir  + filenameBase + '.'   + Xplayer.config.image_filename_auto_ext
-                                    :   // use default image
-                                        Xplayer.config.image_default  ?? ''
-                                )
-                        );
+        let audioFilenameParts = filename.split('.');
+        let audioFileType = audioFilenameParts.length > 1 ? audioFilenameParts.pop() : 'mp3';
+        let audioFilenameBase = audioFilenameParts.join('.');
+        let imagePath = Xplayer.imageDetermine(fileConf, audioFilenameBase, true);
+
 
         // build markup
         
         let el_player = $('<audio controls preload="auto" class="dev">')
                 .append(
-                    $('<source src="'+Xplayer.config.data_dir + filename+'" type="audio/'+fileType+'">'));
+                    $('<source src="'+Xplayer.config.data_dir + filename+'" type="audio/'+audioFileType+'">'));
 
         let el_header = $('<h3>').text(title);
         
-        let ctrl_mute = $('<button class="btn btn-l  ctrl_track_mute" type="button" title="MUTE track">M</button>'); 
-        let ctrl_solo = $('<button class="btn btn-l  ctrl_track_solo" type="button" title="Track SOLO">S</button>'); 
+        let ctrl_mute = $('<button class="btn btn-l  btn-square  ctrl_track_mute" type="button" title="MUTE track">M</button>'); 
+        let ctrl_solo = $('<button class="btn btn-l  btn-square  ctrl_track_solo" type="button" title="Track SOLO">S</button>'); 
         
         let el_controls = $('<div class="controls  me-2   position-absolute  bottom-0  begin-0">')
                 .append(ctrl_mute)
@@ -794,8 +817,11 @@ console.log('TIME FINAL: ', time);
         let ctrl_volume_linked = $('<input type="text" id="volume-slider_'+load_as+'" class="range-text" value="100">'); 
         let ctrl_volume_fancy = $('<div id="volume-slider_'+load_as+'__fancy" class="fancy-volume is-loading"><span class="cut">'); 
 
-        let el_controls2 = $('<div class="me-2  text-end  ctrl-volume">')
-                .append(ctrl_volume_fancy, ctrl_volume, ctrl_volume_linked, $('<div class="scale">'));
+        let el_controls_vol = $('<div class="me-2  text-end  ctrl-volume">')
+                .append(
+                        $('<div class="scale"><span class="line"></span><span class="line"></span></div>'),
+                        $('<div class="rondo">'),   // bottom part of knob, above scale
+                        ctrl_volume_fancy, ctrl_volume, ctrl_volume_linked);
         
         let el_status = $('<div class="status"><span class="indicator"></span><p></p>')
                 .append($('<p class="dev">').text(Xplayer.config.data_dir + filename));
@@ -873,6 +899,8 @@ console.log('TIME FINAL: ', time);
         
         
         let instance_box = $('<div class="rounded-3 p-3  play-item  player-active  state_loading">');
+        let imageElement = Xplayer.imageElPrepare(imagePath);
+
         instance_box.append(
             $('<div class="row">').append(
                 $('<div class="col-7  col-sm-6  col-md-7  col-lg-8  col-xl-7  position-relative">').append(
@@ -881,18 +909,83 @@ console.log('TIME FINAL: ', time);
                     el_controls
                 ),
                 $('<div class="col-3  col-sm-3  col-md-3  col-lg-2  col-xl-3 ">').append(
-                    $('<img src="'+image+'" alt="img" class="img-fluid">')
+                    imageElement
                 ),
                 $('<div class="col-2  col-sm-3  col-md-2  col-lg-2  col-xl-2">').append(
-                    el_controls2
+                    el_controls_vol
                 )
             ),
             el_player
         );
 
-
-        // bind actions
         
+                
+        // embed
+
+        container.append(instance_box);
+
+        Xplayer.linkRangeInputs();
+        Xplayer.initFancyVolumes();
+
+        // on embed respect crossfader position
+        // if crossfader is ready (usually when use button play as...)
+        if (Xplayer.crossfaderReady)    {
+            // reinit crossfader with its current val - it will handle volumes on A and B
+            //faderValue = $('#crossfader-ab').slider( 'option', 'values')
+            Xplayer.crossfaderSetValue($('#crossfader-ab-value').val());
+        }
+
+
+
+        // store operational info
+        
+        Xplayer.instances[load_as] = {
+            el: instance_box,
+            player: el_player,
+        };
+
+
+
+        // BIND PLAYER LISTENERS
+
+
+        // check, to run callback only once
+        let callbackCalled = false;
+        el_player[0].addEventListener('canplay', () => {
+            instance_box.removeClass('state_loading');
+
+            if (callbackCalled === false)   {
+                callbackPlayerReady(el_player[0], instance_box);
+                callbackCalled = true;
+            }
+        });
+
+        
+
+        el_player.on('play', () => {
+            console.log('PLAY ' + load_as);
+            instance_box.addClass('state_playing');
+            instance_box.removeClass('state_paused');
+        });
+
+        el_player.on('pause', () => {
+            // when time is 0 (might have been reset right now) treat as full stop
+            // handle as it was a stop event
+            if (!el_player[0].currentTime) {
+                //console.log('STOP (from pause handler): ' + load_as);
+                instance_box.removeClass('state_paused');    
+            }
+            else    {
+                //console.log('PAUSE:' + load_as);
+                instance_box.addClass('state_paused');
+            }
+        });
+
+
+
+        // bind other events
+
+
         ctrl_mute.click(() => {
             if (el_player.prop('muted'))    {
                 el_player.prop('muted', false);
@@ -925,60 +1018,6 @@ console.log('TIME FINAL: ', time);
                 ctrl_solo.addClass('active')
             }
         });
-
-        el_player.on('play', () => {
-            console.log('PLAY ' + load_as);
-            instance_box.addClass('state_playing');
-            instance_box.removeClass('state_paused');
-        });
-
-        el_player.on('pause', () => {
-            // when time is 0 (might have been reset right now) treat as full stop
-            // handle as it was a stop event
-            if (!el_player[0].currentTime) {
-                //console.log('STOP (from pause handler): ' + load_as);
-                instance_box.removeClass('state_paused');    
-            }
-            else    {
-                //console.log('PAUSE:' + load_as);
-                instance_box.addClass('state_paused');
-            }
-        });
-
-        // we must check, to run it only once
-        let callbackCalled = false;
-        el_player[0].addEventListener('canplay', () => {
-            instance_box.removeClass('state_loading');
-
-            if (callbackCalled === false)   {
-                callback(el_player[0], instance_box);
-                callbackCalled = true;
-            }
-        });
-
-        
-        // embed
-
-        container.append(instance_box);
-        Xplayer.linkRangeInputs();
-        Xplayer.initFancyVolumes();
-
-        // on embed respect crossfader position
-        // if crossfader is ready (usually when use button play as...)
-        if (Xplayer.crossfaderReady)    {
-            // reinit crossfader with its current val - it will handle volumes on A and B
-            //faderValue = $('#crossfader-ab').slider( 'option', 'values')
-            Xplayer.crossfaderSetValue($('#crossfader-ab-value').val());
-        }
-
-        
-        // store operational info
-        
-        Xplayer.instances[load_as] = {
-            el: instance_box,
-            player: el_player,
-        };
-        
         
   
 
@@ -991,12 +1030,12 @@ console.log('TIME FINAL: ', time);
                             <p></p>
                         </div>
                         <div class="me-2 controls">
-                            <button class="btn btn-l  ctrl_track_mute" type="button">M</button>
-                            <button class="btn btn-l  ctrl_track_solo" type="button">S</button>
+                            <button class="btn btn-l btn-square  ctrl_track_mute" type="button">M</button>
+                            <button class="btn btn-l btn-square  ctrl_track_solo" type="button">S</button>
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <img alt="img" height="80" src="#" style="display: inline-block; height: 80px; width: 80px; border: 1px solid red;"width="80">
+                        <img class="image  img-fluid" alt="img" height="80" src="#" style="display: inline-block; height: 80px; width: 80px; border: 1px solid red;"width="80">
                     </div>
                     <div class="col-md-4">
                         <div class="me-2">
@@ -1010,6 +1049,56 @@ console.log('TIME FINAL: ', time);
                 </audio>
             </div>
         */
+    },
+
+
+    /**
+     * Embed image media file - img or svg object
+     */
+    imageElPrepare: (mediaFilePath) => {
+        let imageElement;
+        if ( /\.svg$/.test(mediaFilePath) )   {
+            imageElement = $('<object data="'+mediaFilePath+'" class="image  img-fluid">');
+        }
+        else    {
+            imageElement = $('<img src="'+mediaFilePath+'" alt="img" class="image  img-fluid">');
+        }
+        return imageElement;
+    },
+
+
+    /**
+     * Look for image path for track, using config values, defaults or track filename
+     * @param fileConf obj
+     * @param filenameLookup string
+     * @param dontParseFilename bool
+     * @return string
+     */
+    imageDetermine: (fileConf, filenameLookup, dontParseFilename) => {
+        fileConf = fileConf ?? {};
+        let xconf = Xplayer.config;
+
+        if (!dontParseFilename)  {
+            let filenameParts = filenameLookup.split('.');
+            // pop must be called to remove original ext from array (if filename has at least one dot)
+            let fileExt = filenameParts.length > 1 ? filenameParts.pop() : '';
+            filenameLookup = filenameParts.join('.');
+        }
+
+        let imagePath =     // explicit image given 
+                fileConf?.image_absolute    ??
+                    (fileConf?.image
+                        ?   xconf.data_dir + fileConf?.image
+                        :   // auto filename ext set
+                            (xconf.image_filename_auto_ext
+                                ?   // compile image filename
+                                    xconf.data_dir  + filenameLookup + '.'   + xconf.image_filename_auto_ext
+                                :   // use default image
+                                    xconf.image_default  ?? ''
+                            )
+                    );
+
+        return imagePath;
     },
 
 
