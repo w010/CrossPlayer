@@ -17,6 +17,9 @@ a   {
 .alt    {
     color: var(--wtp-blue);
 }
+.hidden {
+    display: none;
+}
 
 /*
  * Sidebar
@@ -732,3 +735,30 @@ body.dev-mode.paused    {
 /**/
 /*audio::-webkit-media-controls-toggle-closed-captions-button*/
 
+#console    {
+    position: fixed;
+    z-index: 10002;
+    top: 0;
+    left: 0;
+    width: 100%;
+    min-height: 0px;
+    max-height: 0px;
+    overflow-y: scroll;
+    background: #222129;
+    color: #ccc;
+    transition: min-height .2s, max-height .2s, height .2s;
+    font-size: 0.9em;
+}
+#console.expand {
+    max-height: 70%;
+    min-height: 70%;
+    box-shadow: #02020291 9px 11px 9px 4px;
+}
+#console .item    {
+    display: block;
+    border-bottom: 1px solid #5d5d5d;
+    margin: 0 20px;
+}
+#console pre.item    {
+    /*font-family: "Miriam Fixed", fixedsys, console, serif;*/
+}

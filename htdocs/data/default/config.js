@@ -12,6 +12,8 @@ let XplayerConfig =
 	
 	"dev": false,
 
+	"console_show": true,
+
 	"crossfader_initial": -50,
 
 

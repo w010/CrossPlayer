@@ -53,6 +53,10 @@ let Xplayer = {
             dev:        setup?.dev
                     ??  false,
 
+                // debug / advanced view
+            console_show:        setup?.console_show
+                    ??  false,
+
                 // start value
             crossfader_initial:     setup?.crossfader_initial
                     ??  -100,
@@ -80,7 +84,7 @@ let Xplayer = {
                     },*/
             ],
         }
-        
+        Xplayer.writeToConsole('config:', Xplayer.config);
         if (Xplayer.config.dev)
             $('body').addClass('dev-mode');
     },
@@ -131,7 +135,7 @@ let Xplayer = {
 
         $(document).on('keydown', e => {
             //console.log(e.keyCode);
-            if (e.keyCode === 32) {
+            if (e.keyCode === 32) {     // space
                 e.preventDefault();
                 if (Xplayer.play_state === 1)   {
                     console.log('PAUSE');
@@ -149,6 +153,9 @@ let Xplayer = {
                 else    {
                     Xplayer.transportPause();
                 }
+            }
+            if (e.keyCode === 192) {     // ` - open quake style console
+                Xplayer.consoleToggle();
             }
         });
 
@@ -187,6 +194,12 @@ let Xplayer = {
         $('.appversion').bind('dblclick', () => {
             $('body').toggleClass('dev-mode');
         });
+
+        if (Xplayer.config.console_show)    {
+            $('#console').bind('dblclick', (e) => {
+                Xplayer.consoleToggle();
+            }).removeClass('hidden');
+        }
     },
 
     syncTime: (time) => {
@@ -997,26 +1010,180 @@ console.log('TIME FINAL: ', time);
             </div>
         */
     },
+
+
+    consoleToggle: () => {
+        let console_custom = $('#console');
+        console_custom.toggleClass('expand')
+            .scrollTop(console_custom.prop('scrollHeight'));
+    },
+
+
+    writeToConsole: (log, data) => {
+        let item;
+        if (data)   {
+            let dataDump = JSON.stringify(data, null, "\t");
+            item = $('<pre class="item">').text(log + "\n" + (dataDump || '[cannot json.stringify variable]'));
+        }
+        else    {
+            item = $('<div class="item">').text(log);
+        }
+        let console_custom = $('#console');
+        console_custom.append(item);
+        console_custom.scrollTop(console_custom.prop('scrollHeight'));
+        console.log(log, data);
+    }
 };
 
 
 
+let XplayerNode = {
 
+    /* node state - whether we can use or not */
+    operating: false,
+
+    /* node shorthand registry */
+    n: {fs: null},
+
+    config: {
+        data_dir:   /*setup?.data_dir ??*/  './app/data/',
+    },
+    
+
+    init: () => {
+        if (typeof nw !== 'undefined')  {
+            XplayerNode.operating = true;
+            XplayerNode.n.fs = nw.require('fs');
+            Xplayer.writeToConsole('NODE FOUND!');
+        }
+        else    {
+            Xplayer.writeToConsole('NODE NOT PRESENT.');
+        }
+    },
+
+
+    readConfigData: (callback) => {
+        callback([]);
+        return [];
+        if (!XplayerNode.operating)     return [];
+        Xplayer.writeToConsole ("- READ CONF START");
+
+        let config = {};
+        let userPreferences = {};
+
+        // 1: Optionally, read [data]/userPreferences.json
+
+//        let userPreferencesData = XplayerNode.readFile(XplayerNode.config.data_dir + 'userPreferences.json');
+            Xplayer.writeToConsole('userPreferencesData', userPreferencesData);
+
+        if (userPreferencesData) {
+            // userPreferences = JSON.parse(userPreferencesData);
+            // Xplayer.writeToConsole('userPreferences', userPreferences);
+        }
+        Xplayer.writeToConsole('userPreferences', userPreferences);
+return;
+        // 2: If present, read [data]/config.json
+
+        let generalConfigData = XplayerNode.readFile(XplayerNode.config.data_dir + 'config.json');
+        if (generalConfigData) {
+            // todo: decide - if config.json found, we expect it has full config and nothing else is read?
+            config = JSON.parse(generalConfigData);
+            Xplayer.writeToConsole('config', config);
+        }
+        else {
+            // 3: Scan data subdirs
+
+            // iterate subdirs, try to read config.json / js if found, otherwise use: subdir as name, read file list
+            XplayerNode.readDataSubdirs(XplayerNode.config.data_dir).forEach((subdir, i) => {
+            
+                alert (subdir);
+                // todo: json structure fix
+            });
+        }
+
+        config.prefs = userPreferences;
+        callback(config);
+
+        Xplayer.writeToConsole ("... config read finished."); 
+    },
+
+
+    
+    readFile: (path) => {
+        if (!XplayerNode.operating)     return;
+        let content = '';
+        //Xplayer.writeToConsole(' - path: ' + path);
+
+        try {
+            content = XplayerNode.n.fs.readFileSync(path, 'utf8');
+        } catch (err) {
+            Xplayer.writeToConsole('error: ' + err);
+        }
+        //Xplayer.writeToConsole(' - content: ' + content);
+        //Xplayer.writeToConsole(' - content2: ', content);
+        return content;
+    },
+
+
+    readDataSubdirs: (path) => {
+        if (!XplayerNode.operating)     return;
+        let subdirs = [];
+
+        try {
+            subdirs = XplayerNode.n.fs.readdirSync(path).map(fileName => {
+                return path.join(path, fileName)
+            })
+            .filter(fileName => {
+                return XplayerNode.n.fs.lstatSync(fileName).isDirectory()
+            });
+            
+            Xplayer.writeToConsole(' - subdirs: ', subdirs);
+            
+        } catch (err) {
+            Xplayer.writeToConsole('error: ' + err);
+        }
+        return subdirs;        
+    }
+};
+
+
+// can be called beyond jq, not waiting for domready
+XplayerNode.init();
 
 
 
 (() => {
     'use strict'
 
-    Xplayer.configure(XplayerConfig);
-    Xplayer.initialize();
-    
-    DigitAll.configure({
-        valueDataKey: 'time',
-        dev: Xplayer.config.dev,
-    });
-    DigitAll.initialize({
-        applyTo: '.digitall',
-        listenUpdate: '.digitall.listenUpdate',
-    });
+    let boot = (incomingConfig) => {
+        Xplayer.configure(incomingConfig);
+        Xplayer.initialize();
+
+        DigitAll.configure({
+            valueDataKey: 'time',
+            dev: Xplayer.config.dev,
+        });
+        DigitAll.initialize({
+            applyTo: '.digitall',
+            listenUpdate: '.digitall.listenUpdate',
+        });
+    }
+
+
+
+    // if node has status: operating, it means we're in the app/standalone mode.
+    // in such case, read configuration data using node filesystem tools and boot using it when ready.
+    if (XplayerNode.operating)  {
+        XplayerNode.readConfigData((readConfig) => {
+            readConfig.console_show = true;
+            readConfig.data_dir = readConfig.data_dir.replace('/^\.\/data/', './app/data/');
+            Xplayer.writeToConsole(readConfig.data_dir);
+
+            boot(readConfig);
+        });
+    }
+    // otherwise - standard run
+    else    {
+        boot(XplayerConfig);
+    }
 })()
