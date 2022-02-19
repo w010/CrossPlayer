@@ -1020,6 +1020,7 @@ console.log('TIME FINAL: ', time);
 
 
     writeToConsole: (log, data) => {
+        let backtrace = (new Error().stack).replace(/^Error/, 'Trace:');
         let item;
         if (data)   {
             let dataDump = JSON.stringify(data, null, "\t");
@@ -1028,10 +1029,12 @@ console.log('TIME FINAL: ', time);
         else    {
             item = $('<div class="item">').text(log);
         }
+        item.attr('title', backtrace);
         let console_custom = $('#console');
         console_custom.append(item);
         console_custom.scrollTop(console_custom.prop('scrollHeight'));
-        console.log(log, data);
+        if (data)   console.log(log, data)
+        else        console.log(log)
     }
 };
 
