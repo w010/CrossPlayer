@@ -556,6 +556,10 @@ console.log('TIME FINAL: ', time);
             return console.error('No filename specified!', fileConf);
         }
 
+        let filenameParts = filename.split('.');
+        let fileType = filenameParts.length > 1 ? filenameParts.pop() : 'mp3';
+        let filenameBase = filenameParts.join('.');
+
         let container = $('#container-instance-timebase');
 
         // build markup
@@ -564,7 +568,7 @@ console.log('TIME FINAL: ', time);
 
         let el_player = $('<audio controls preload="auto" muted class="dev">')
                 .append(
-                    $('<source src="'+ Xplayer.config.data_dir +filename+'" type="audio/mp3">'));
+                    $('<source src="'+ Xplayer.config.data_dir +filename+'" type="audio/'+fileType+'">'));
 
         // in general is not visible, but keep markup for dev display / debug purposes
         let instance_box = $('<div class="rounded-3 p-3  play-item  master-time">');
@@ -650,7 +654,9 @@ console.log('TIME FINAL: ', time);
         let el_status = $('<div class="status"><span class="indicator"></span><p></p>')
                 .append($('<p class="dev">').text(Xplayer.config.data_dir + filename));
 
-        let filenameBase = filename.split('.').slice(0, -1).join('.');
+        let filenameParts = filename.split('.');
+        let fileType = filenameParts.length > 1 ? filenameParts.pop() : 'mp3';
+        let filenameBase = filenameParts.join('.');
         let image =     // explicit image given 
                     fileConf?.image_absolute    ??
                         (fileConf?.image
@@ -738,7 +744,9 @@ console.log('TIME FINAL: ', time);
 
         // set some values
 
-        let filenameBase = filename.split('.').slice(0, -1).join('.');
+        let filenameParts = filename.split('.');
+        let fileType = filenameParts.length > 1 ? filenameParts.pop() : 'mp3';
+        let filenameBase = filenameParts.join('.');
         let image =     // explicit image given 
                     fileConf?.image_absolute    ??
                         (fileConf?.image
@@ -756,7 +764,7 @@ console.log('TIME FINAL: ', time);
         
         let el_player = $('<audio controls preload="auto" class="dev">')
                 .append(
-                    $('<source src="'+Xplayer.config.data_dir + filename+'" type="audio/mp3">'));
+                    $('<source src="'+Xplayer.config.data_dir + filename+'" type="audio/'+fileType+'">'));
 
         let el_header = $('<h3>').text(title);
         
