@@ -14,7 +14,7 @@
     position: fixed;
     z-index: 10002;
     /*top: 0;*/
-    top: - var(--qc-offset); /* offset by prompt height */
+    top: calc(0px - var(--qc-offset)); /* offset by prompt height */
     left: 0;
     width: 100%;
     min-height: 0;
