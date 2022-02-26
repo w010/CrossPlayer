@@ -194,21 +194,32 @@ a   {
 
     .appname-wrap + .appname-wrap .appname  {
         /*-webkit-text-stroke: #ffc720;*/
-        -webkit-text-stroke: rgba(15, 215, 58, 1);
+        -webkit-text-stroke: #0FD73AFF;
         /* lower than below layer */
         font-weight: 500;
         /*text-shadow: #ffc720 3px 2px 14px, rgb(70 52 227 / 96%) 2px 5px 8px;*/
     }
     .appname-wrap + .appname-wrap .appname .char  {
         color: #e8410c;
+        opacity: 1;
     }
 
 /* define animation classes, but set them randomly by js */
 .appname .char.flicker1  {  animation: flicker-a 2s infinite ease-in-out;  }
 .appname .char.flicker2  {  animation: flicker-b 2s infinite ease-in-out;  }
 .appname .char.flicker3  {  animation: flicker-c 2s infinite ease-in-out;  }
-.appname .char.flicker4  {  animation: flicker-d 2s infinite ease-in-out;  }
+.appname .char.flicker4#flickering-item-0  {  animation: flicker-d-under 2s infinite ease-in-out;  }
+.appname .char.flicker4#flickering-item-1  {  animation: flicker-d-ontop 2s infinite linear;  }
 
+/* avoid ugly shadow redrawing above the animated letter, when removing class. instead removing, change to this one, with no animation. 
+[it seems it redraws it anyway, but with soft transition. so don't bother, it's barely to be seen.]  */
+.appname .char.flicker-still  {  animation: flicker-still 2s infinite linear;  }
+
+
+@keyframes flicker-still {
+    0% {    opacity: 1;     }
+    100% {  opacity: 1;     }
+}
 @keyframes flicker-a {
     0% {    opacity: 1;     }
     8% {    opacity: 1;     }
@@ -242,12 +253,20 @@ a   {
     75% {   opacity: 1;     }
     100% {  opacity: 1;     }
 }
-@keyframes flicker-d {
+@keyframes flicker-d-ontop {
     0% {    opacity: 1;     }
     5% {   opacity: .5;    }
     10% {   opacity: .9;    }
-    15% {   opacity: .2;    }
-    95% {   opacity: .3;     }
+    18% {   opacity: .2;    }
+    25% {   opacity: .9;    }
+    100% {  opacity: 1;     }
+}
+@keyframes flicker-d-under {
+    0% {    opacity: 1;     }
+    5% {   opacity: .3;    }
+    10% {   opacity: .4;    }
+    18% {   opacity: .2;    }
+    25% {   opacity: .7;    }
     100% {  opacity: 1;     }
 }
 

@@ -1136,25 +1136,46 @@ console.log('TIME FINAL: ', time);
             let char = appNameText.charAt(t);
             let charWrapped = $('<span class="char">').text(char);
             if (flickerCharNum === t)   {
-                let flickerLoop = setInterval(() => {
-                    // reset
-                    charWrapped.attr('class', 'char');
-                    // animations are 1 to 4. lower the chance to draw one of them, by lowering scope's min 
-                    let minChance = -8, maxChance = 4;
-                    let flickerAnimationNum = Math.floor(Math.random() * (maxChance + 1 - minChance) + minChance);
-                    // console.log(flickerAnimationNum);
-                    if (flickerAnimationNum > 0)   {
-                        charWrapped.addClass('flicker'+flickerAnimationNum);
-                    }
-                }, 2000);
+                charWrapped.addClass('flicker');
             }
             appName.append(
                 charWrapped
             );
         }
 
-        // duplicate whole appname element
+        // duplicate whole appname element, to add another layer of text-shadow, stroke etc.
         container.find('.appname-wrap').clone().appendTo(container);
+
+        // try to not call jquery selector in endless loop - collect needed elements to array and simply operate directly on that prepared set
+        let flickeringItems = [];
+        container.find('.flicker').each((i, el) => {
+            let $el = $(el);
+            $el.attr('id', 'flickering-item-'+ i);
+            flickeringItems.push($el);
+        });
+
+
+
+        // endless loop - randomize animation class for that letter (both copies) 
+        let flickerLoop = setInterval(() => {
+
+            // animations are 1 to 4. lower the chance to draw one of them, by lowering scope's min 
+            let minChance = -24, maxChance = 4;
+            let flickerAnimationNum = Math.floor(Math.random() * (maxChance + 1 - minChance) + minChance);
+
+            // set that class to both copies!
+            $(flickeringItems).each((i, $el) => {
+                // reset
+                if (flickerAnimationNum > 0)   {
+                    $el.addClass('flicker'+flickerAnimationNum)
+                        .removeClass('flicker-still');
+                }
+                else    {
+                    $el.addClass('flicker-still')
+                        .removeClass('flicker1 flicker2 flicker3 flicker4');
+                }
+            });
+        }, 2000);
     },
 
 
