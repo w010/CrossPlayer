@@ -450,12 +450,6 @@ console.log('TIME FINAL: ', time);
             .trigger('change');
     },
     
-
-    formatTime: (seconds) => {
-        let durationMinutes = parseInt(seconds / 60, 10);
-        let durationSeconds = parseInt(seconds % 60);
-        return durationMinutes + ':' + durationSeconds.toString().padStart(2, '0');
-    },
     
     
     initFancyVolumes: () => {
@@ -478,50 +472,47 @@ console.log('TIME FINAL: ', time);
         // here basically expect the percentage value. if you need to use it with other scope,
         // pass them and calculate valuePercent here using them.
         //let valuePercent = $(el).data('value');
+        // todo: set these using data prop
         let minRotationAngle = 225;     // about 7:30
         let maxRotationAngle = 135;     // about 4:30
-        let rotation = 'R';     // clockwise
+        let rotateOrientation = 'R';     // clockwise: value +
         
-        
-        //console.log('%', valuePercent);
-        // calculate degree between these min/max, respecting rotation dir
-        if (rotation === 'R')   {
+        // todo later: store references to them and just iterate, instead of querying each time
+        let knob = $(el).find('knob');
+        let turn = $(el).find('turn');
+        let rondo = $(el).find('rondo');
+
+
+        // calculate degree between these min/max, respecting rotation dir. todo later: orientation=L
+        if (rotateOrientation === 'R')   {
             let angleBetween = 360-minRotationAngle + maxRotationAngle;
 
             // calculate degree for incoming percent value
             let degreesFromPercentOfScope = angleBetween * valuePercent / 100;
-            // but it's calculated according to 0! so we must go back by minrotation degrees
-            let finalAngle = minRotationAngle + degreesFromPercentOfScope;
-            if (finalAngle >= 360) {
-                finalAngle = finalAngle - 360;
-            }
+            // but it's calculated according to 0 - so we must go back by minrotation degrees
+            let finalAngle = Utility.angleWithinOneFullRotation(minRotationAngle + degreesFromPercentOfScope);
             // console.log('DEG', degreesFromPercentOfScope);
             // console.log('finalAngle', finalAngle);
+
+            // - Rotate the whole controller item
+
             // $(el).css("transform", 'rotate('+finalAngle+'deg);'});   // doesn't work. need this:
-            $(el).css({ WebkitTransform: 'rotate(' + finalAngle + 'deg)'});
-            
+            $(knob).css({ WebkitTransform: 'rotate(' + finalAngle + 'deg)'});
 
-            // angle correction for box shadow
-            
-            let xOffset = 3;
-            let yOffset = 2;
-            let blurSpreadColor = '6px 0px #080808a6';
-            let inset = false;
 
-            let newOffset = convertOffset(xOffset, yOffset, finalAngle);
-            $(el).css({boxShadow: (inset ? 'inset ' : '') + newOffset[0] + 'px ' + newOffset[1] + 'px ' + blurSpreadColor});
-            $(el).find('.cut').css({boxShadow: (inset ? 'inset ' : '') + newOffset[0] + 'px ' + newOffset[1] + 'px ' + blurSpreadColor});
-            
-            function convertOffset(x, y, deg) {
-                let radians = deg * Math.PI / 180;
-                let sin = Math.sin(radians);
-                let cos = Math.cos(radians);
+            // - Rotation visual corrections
 
-                return [
-                    Math.round((x * cos + y * sin) * 100) / 100,
-                    Math.round((-x * sin + y * cos) * 100) / 100
-                ];
-            }
+            // -- Gradient angle update
+            // --- Rondo
+            Utility.gradientAngleUpdate(rondo, finalAngle);
+            // --- Turn
+            Utility.gradientAngleUpdate(turn, finalAngle);
+
+            // -- Shadow offset recalculate
+            // --- Knob
+            Utility.shadowDropOffsetRecalculate(knob, finalAngle);
+            // --- Turn
+            Utility.shadowDropOffsetRecalculate(turn, finalAngle);
         }
     },
 
@@ -655,7 +646,7 @@ console.log('TIME FINAL: ', time);
             // set overall common duration
             if (!Xplayer.duration)  {
                 Xplayer.duration = el_player[0].duration;
-                $('#time_duration').data('time', Xplayer.formatTime(Xplayer.duration))
+                $('#time_duration').data('time', Utility.formatTime(Xplayer.duration))
                     .trigger('datachange');
             }
             
@@ -669,7 +660,7 @@ console.log('TIME FINAL: ', time);
         // update global time counter & progress bar while playing, always keep in sync with this item
         el_player[0].addEventListener('timeupdate', () => {
             // track time position 
-            $('#time_position').data('time', Xplayer.formatTime(el_player[0].currentTime))
+            $('#time_position').data('time', Utility.formatTime(el_player[0].currentTime))
                     .trigger('datachange');
             
             // progress bar indicator
@@ -833,12 +824,17 @@ console.log('TIME FINAL: ', time);
         
         let ctrl_volume = $('<input type="range" id="volume-slider_'+load_as+'__range" class="dev" max="100" value="100">'); 
         let ctrl_volume_linked = $('<input type="text" id="volume-slider_'+load_as+'" class="range-text" value="100">'); 
-        let ctrl_volume_fancy = $('<div id="volume-slider_'+load_as+'__fancy" class="fancy-volume is-loading"><span class="cut">'); 
+        let ctrl_volume_fancy = $('<div id="volume-slider_'+load_as+'__fancy" class="fancy-volume is-loading">')
+                .append(
+                        $('<div class="scale"><span class="line"></span><span class="line"></span></div>'),
+                        $('<knob>').append(
+                            $('<rondo><span class="cut">'),   // bottom part of knob, above scale
+                            $('<turn><span class="cut">')
+                        )
+                ); 
 
         let el_controls_vol = $('<div class="me-2  text-end  ctrl-volume">')
                 .append(
-                        $('<div class="scale"><span class="line"></span><span class="line"></span></div>'),
-                        $('<div class="rondo">'),   // bottom part of knob, above scale
                         ctrl_volume_fancy, ctrl_volume, ctrl_volume_linked);
         
         let el_status = $('<div class="status"><span class="indicator"></span><p></p>')
