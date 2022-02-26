@@ -258,7 +258,7 @@ a   {
     5% {   opacity: .5;    }
     10% {   opacity: .9;    }
     18% {   opacity: .2;    }
-    25% {   opacity: .9;    }
+    95% {   opacity: .3;    }
     100% {  opacity: 1;     }
 }
 @keyframes flicker-d-under {
@@ -266,7 +266,7 @@ a   {
     5% {   opacity: .3;    }
     10% {   opacity: .4;    }
     18% {   opacity: .2;    }
-    25% {   opacity: .7;    }
+    95% {   opacity: .3;    }
     100% {  opacity: 1;     }
 }
 

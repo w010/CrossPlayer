@@ -1123,6 +1123,7 @@ console.log('TIME FINAL: ', time);
 
     initLogo: () => {
         let container = $('.appname-container');
+        container.attr('title', 'what, never seen a broken neo sign?')
 
         // wrap each char in span
         let appName = container.find('.appname');
