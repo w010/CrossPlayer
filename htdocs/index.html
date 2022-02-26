@@ -12,6 +12,8 @@
     <link href="dist/css/jqueryui-custom.css" rel="stylesheet">
 	<!--<link href="https://code.jquery.com/ui/1.13.0/themes/smoothness/jquery-ui.css" rel="stylesheet">-->
     <link href="assets/css/DigitAll.css?34365" rel="stylesheet">
+    <link href="assets/css/ReelTape.css?34365" rel="stylesheet">
+    <link href="assets/css/QConsole.css?34365" rel="stylesheet">
     <link href="assets/css/app.css?34365" rel="stylesheet">
     
 	
@@ -137,22 +139,7 @@
 					<div class="col-md-6  col-xl-5  overflow-hidden">
 
 						<!-- ANIMATED REEL -->
-						<div id="animated_reel" class="reel  spin-stopped">
-							<w_roll class="left"></w_roll>
-							<w_roll class="right"></w_roll>
-							
-							<w_roll_shadow class="left"></w_roll_shadow>
-							<w_roll_shadow class="right"></w_roll_shadow>
-							<w_roll_blink class="left"></w_roll_blink>
-							<w_roll_blink class="right"></w_roll_blink>
-							<div class="power"></div>
-							<div class="readheader">
-								<div class="tape tape-left"></div>
-								<div class="tape tape-right"></div>
-								<div class="tape tape-middle"></div>
-								<div class="thehead"></div>
-							</div>
-						</div>
+						<div id="animated_reel" class="reel"></div>
 
 					</div>
 					
@@ -312,16 +299,43 @@
 							<dt class="float-start">Esc</dt>
 							<dd>Pause / Stop</dd>
 							
+							<dt class="float-start disabled">Left / Right</dt>
+							<dd>Seek</dd>
+
+							<dt class="float-start disabled">A / B</dt>
+							<dd class="disabled">Mute the opposite one</dd>
+
+							<dt class="float-start disabled">&lt; / &gt;</dt>
+							<dd class="disabled">Crossfade A&lt;-&gt;B volumes</dd>
+							
+							<dt class="float-start disabled">Up / Down</dt>
+							<dd class="disabled">Master volume</dd>
+
+							<dt class="float-start disabled">Z / X</dt>
+							<dd class="disabled">Switch A to prev / next track</dd>
+							
+							<dt class="float-start disabled">N / M</dt>
+							<dd class="disabled">Switch B to prev / next track</dd>
+
 							<dt class="float-start">`</dt>
-							<dd>Console expand (if enabled)</dd>
-
-							<dt class="float-start"><s><i>Left / Right</i></s></dt>
-							<dd><s><i>Seek</i></s></dd>
-
-							<dt class="float-start"><s><i>A / B</i></s></dt>
-							<dd><s><i>Mute the opposite one</i></s></dd>
+							<dd>Console open (if available)</dd>
 						</dl>
 						
+						
+						<dl class="commands">
+							<dt class="list-header">
+								<h6 class="alt">Console commands:</h6>
+							</dt>
+
+							<dt class="float-start">eval</dt>
+							<dd>exec some js code</dd>
+
+							<dt class="float-start">Xplayer [methodname]</dt>
+							<dd title="todo: time value pass!">exec Xplayer method (like: transportStop, syncTime nn etc.)</dd>
+
+							<dt class="float-start">QConsole [methodname]</dt>
+							<dd>exec QConsole method (like: toggle, etc.)</dd>
+						</dl>
 					</div>
 				</div>
 					<!-- using js, insert such items: -->
@@ -368,7 +382,8 @@
 			</div>
         </div>
     </div>
-    <div id="console" class="hiddenx expandx"></div>
+    <div id="console" class="console  hidden_  expanded_"></div>
+	<!-- style="--qc-size: 30;"> -->
 
 
 	<!--#BOUNDARY_CONFIG#-->
@@ -379,10 +394,15 @@
 		 */
 	</script>
 	<!--#BOUNDARY_CONFIG#-->
+
 	<script src="dist/js/jquery.3.6.0.min.js"></script>
 	<script src="dist/js/jquery-ui.1.13.1.min.js"></script>
     <script src="dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="assets/js/QConsole.js"></script>
     <script src="assets/js/DigitAll.js"></script>
+    <script src="assets/js/ReelTape.js"></script>
+
     <script src="assets/js/app.js"></script>
 </body>
 </html>

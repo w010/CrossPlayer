@@ -192,7 +192,7 @@ a   {
     position: relative;
     padding-left: 1.5em;
     color: var(--wtp-bodytext);
-    text-shadow: #898989a3 2px 3px 4px;
+    text-shadow: #898989a3 3px 2px 6px;
     
     font-style: italic;
 }
@@ -213,7 +213,7 @@ dl {
 
 dl dt  {
     min-width: 20%;
-    margin-left: 5%;
+    margin: 0 5%;
 } 
 dl dd  {
     color: var(--wtp-gray4);
@@ -225,6 +225,15 @@ dt.list-header h5,
 dt.list-header h6  {
     display: inline-block;
 }
+dd.disabled, dt.disabled    {
+    font-style: italic;
+    text-decoration: line-through;
+    opacity: .2;
+}
+
+dl.commands dt  {
+    min-width: 30%;;
+} 
 
 
 .section-header {
@@ -714,128 +723,9 @@ input.slider-value:focus   {
 
 
 
+/* REEL TAPE PLAYER */
 
-.reel {
-    width: 19.0em;
-    height: 11em;
-    position: relative;
-    transition: opacity .3s;
-    margin: 0.5em auto 0;
-    
-    
-}
-
-.reel w_roll,
-.reel w_roll_shadow,
-.reel w_roll_blink {
-    width: 9em;
-    height: 9em;
-    position: absolute;
-    background: no-repeat url(../../assets/images/reel.svg) 0 0;
-    background-size: contain;
-}
-.reel .right {
-    right: 0;
-}
-
-    .reel w_roll_shadow    {
-        z-index: -1;
-        border-radius: 50%;
-        box-shadow: #080704 4px 3px 7px 2px;
-        background: none;
-
-            transition: all .9s;
-    }
-    .reel w_roll_blink    {
-        z-index: 1;
-        border-radius: 50%;
-        /*width: 201px;*/
-        width: 9em;
-        /*height: 201px;*/
-        height: 9em;
-        background: linear-gradient(311deg, rgba(131,58,180,0) 0%, rgba(23,209,29,.4) 35%, rgba(253,29,29,.4) 45%, rgba(203,29,209,.5) 55%, rgba(252,176,69,0) 100%);
-        opacity: .3;
-
-            transition: all .9s;
-    }
-        .reel w_roll_blink.right    {
-            right: -3px;
-        }
-
-.reel w_roll    {
-    animation: /*rollrotatestart 1 4s ease-in-out paused,*/ rollrotate 3s infinite linear paused;
-    
-        transition: all 1.5s;
-}
-
-.reel.spin-playing,
-.reel.spin-paused    {
-    opacity: 1;
-}
-.reel.spin-stopped    {
-    opacity: .8;
-}
-
-.reel.spin-playing w_roll    {
-    /*animation: rollrotate 1s infinite linear paused;*/
-    animation-play-state: running, running;
-}
-
-@keyframes rollrotate {
-    from {  transform: rotate(0deg);    }
-    to {    transform: rotate(360deg);  }
-}
-@keyframes rollrotatestart {
-    from {  transform: rotate(0deg);    }
-    to {    transform: rotate(360deg);  }
-}
-
-.reel .power    {
-    position: absolute;
-    bottom: 16px;
-    width: 16px;
-    height: 16px;
-    background: #218557;
-    background: linear-gradient(134deg, #1d6f49c2, #c97a20c9);
-    border: 1px solid #88a180;
-    border-radius: 50%;
-    transition: box-shadow .1s, background-color .1s;
-    box-shadow: #060606ad 3px 1px 5px 0px;
-}
-    .reel.spin-playing .power    {
-        background: #20c997;
-        box-shadow: #2d9330b3 1px 0px 13px 4px;
-        border-color: #83e960;
-    }
-    .reel.spin-paused .power    {
-        background: #c97a20;
-        box-shadow: rgba(147, 106, 45, 0.7) 1px 0px 13px 4px;
-        border-color: #e9a960;
-    }
-
-
-.reel .readheader    {
-    position: absolute;
-    bottom: 1em;
-    width: 7em;
-    left: calc(50% - 3.5em);
-    height: 4em;
-    border: 1px solid red;
-}
-
-.reel .readheader .tape    {
-    
-}
-    .reel .readheader .tape-left    {
-        
-    }
-    .reel .readheader .tape-right    {
-        
-    }
-.reel .readheader .roll    {
-    
-}
-.reel .readheader .thehead    {
+:root {
     
 }
 
@@ -929,34 +819,6 @@ body.dev-mode.paused    {
 /*audio::-webkit-media-controls-return-to-realtime-button*/
 /**/
 /*audio::-webkit-media-controls-toggle-closed-captions-button*/
-
-#console    {
-    position: fixed;
-    z-index: 10002;
-    top: 0;
-    left: 0;
-    width: 100%;
-    min-height: 0px;
-    max-height: 0px;
-    overflow-y: scroll;
-    background: #222129;
-    color: #ccc;
-    transition: min-height .2s, max-height .2s, height .2s;
-    font-size: 0.9em;
-}
-#console.expand {
-    max-height: 70%;
-    min-height: 70%;
-    box-shadow: #02020291 9px 11px 9px 4px;
-}
-#console .item    {
-    display: block;
-    border-bottom: 1px solid #5d5d5d;
-    margin: 0 20px;
-}
-#console pre.item    {
-    /*font-family: "Miriam Fixed", fixedsys, console, serif;*/
-}
 
 
 

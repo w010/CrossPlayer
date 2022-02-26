@@ -1,5 +1,10 @@
-
-
+/**
+ * X Player / Cross Player
+ * wolo.pl '.' studio
+ * 2022
+ * 
+ * Webapp for presenting sets of similar audio tracks using parallel players and nice crossfading tools
+ */
 let Xplayer = {
     
     // currently active players
@@ -53,7 +58,7 @@ let Xplayer = {
             dev:        setup?.dev
                     ??  false,
 
-                // debug / advanced view
+                // console show
             console_show:        setup?.console_show
                     ??  false,
 
@@ -84,9 +89,11 @@ let Xplayer = {
                     },*/
             ],
         }
-        Xplayer.writeToConsole('config:', Xplayer.config);
+        Xplayer.writeToConsole('CONFIG:', Xplayer.config, 'info');
         if (Xplayer.config.dev)
             $('body').addClass('dev-mode');
+
+        return this;
     },
 
 
@@ -100,7 +107,7 @@ let Xplayer = {
 
         Xplayer.linkRangeInputs();
         Xplayer.initFancyVolumes();
-        Xplayer.initAnimatedReel();
+
         
         $('#collection_title').text(Xplayer.config.collection_title);
         $('#collection_description').append($('<p>'+ Xplayer.config.collection_description +'</p>'));
@@ -154,12 +161,9 @@ let Xplayer = {
                     Xplayer.transportPause();
                 }
             }
-            if (e.keyCode === 192) {     // ` - open quake style console
-                Xplayer.consoleToggle();
-            }
         });
 
-        
+
         // TIMELINE / SEEK
         let timeline = $('#seek-slider');
         
@@ -195,13 +199,33 @@ let Xplayer = {
             $('body').toggleClass('dev-mode');
         });
 
-        if (Xplayer.config.console_show)    {
-            $('#console').bind('dblclick', (e) => {
-                Xplayer.consoleToggle();
-            }).removeClass('hidden');
-        }
+        //if (Xplayer.config.console_show)    {}
+
+
+
+        // Nice analog display
+
+        DigitAll.configure({
+            valueDataKey: 'time',
+            dev: Xplayer.config.dev,
+        });
+        DigitAll.initialize({
+            applyTo: '.digitall',
+            listenUpdate: '.digitall.listenUpdate',
+        });
+
+
+
+        // Oldschool tape player animation - just for fun
+        ReelTape.configure();
+        ReelTape.initialize();
     },
 
+
+    /**
+     * Set one time value to all of the active players
+     * @param time int/float
+     */
     syncTime: (time) => {
         console.log('time sync. incoming val: ', time);
         time = parseFloat(time);
@@ -236,7 +260,7 @@ console.log('TIME FINAL: ', time);
             return console.log('Cannot start playing, no time base instance! No files found?');
         }
 
-        $('#animated_reel').addClass('spin-playing').removeClass('spin-paused spin-stopped');
+        ReelTape.start();
         $('body').addClass('playing').removeClass('paused stopped');
         Xplayer.play_state = 1;
 
@@ -268,7 +292,7 @@ console.log('TIME FINAL: ', time);
             Xplayer.transportStart();
         }
         else    {
-            $('#animated_reel').removeClass('spin-playing').addClass('spin-paused');
+            ReelTape.pause();
             $('body').addClass('paused').removeClass('stopped');
             Xplayer.play_state = 0;
 
@@ -287,7 +311,7 @@ console.log('TIME FINAL: ', time);
         let el = $('#ctrl_stop');
         el.blur();
 
-        $('#animated_reel').addClass('spin-stopped').removeClass('spin-playing spin-paused');
+        ReelTape.stop();
         $('body').addClass('stopped').removeClass('playing paused');
         Xplayer.play_state = -1;
 
@@ -500,13 +524,6 @@ console.log('TIME FINAL: ', time);
         }
     },
 
-    
-    initAnimatedReel: () => {
-        // just for fun
-        $('#animated_reel .power').on('dblclick', () => {
-            $('#animated_reel').toggleClass('spin-playing').toggleClass('spin-stopped');
-        });
-    },
 
 
     /**
@@ -1102,34 +1119,52 @@ console.log('TIME FINAL: ', time);
     },
 
 
-    consoleToggle: () => {
-        let console_custom = $('#console');
-        console_custom.toggleClass('expand')
-            .scrollTop(console_custom.prop('scrollHeight'));
+    writeToConsole: (log, data, level) => {
+        QConsole.log(log, data, level);
     },
 
 
-    writeToConsole: (log, data) => {
-        let backtrace = (new Error().stack).replace(/^Error/, 'Trace:');
-        let item;
-        if (data)   {
-            let dataDump = JSON.stringify(data, null, "\t");
-            item = $('<pre class="item">').text(log + "\n" + (dataDump || '[cannot json.stringify variable]'));
+    /**
+     * Cli handlers for console
+     * @return {{}}
+     */
+    cliCommands: () => {
+        return {
+            'reel': (params) => {
+                // todo later: handle object methods calling, like other
+                QConsole.collapse();
+                //ReelTape.configure();
+                ReelTape.runTester();
+                return {result: 'Reel Tape tester screen'};
+            },
+
+            'xplayer': (params) => {
+                console.log('Xplayer - params: ', params);
+                let method = params[0];
+                let methodParams = params.slice(1);
+                console.log(methodParams);
+                if (!method) {
+                    return {    result: 'Xplayer: no method specified!',    level: 'warning'     };
+                }
+                if (typeof Xplayer[method] !== 'function') {
+                    return {    result: 'Xplayer: cannot find method `'+method+'`',    level: 'error'     };
+                }
+                return {    result: Xplayer[method](methodParams.join(' ')), };
+            },
         }
-        else    {
-            item = $('<div class="item">').text(log);
-        }
-        item.attr('title', backtrace);
-        let console_custom = $('#console');
-        console_custom.append(item);
-        console_custom.scrollTop(console_custom.prop('scrollHeight'));
-        if (data)   console.log(log, data)
-        else        console.log(log)
     }
 };
 
 
 
+
+
+
+/**
+ * X player
+ * Node.js compatibility layer, for use in standalone app mode
+ * [WIP]
+ */
 let XplayerNode = {
 
     /* node state - whether we can use or not */
@@ -1147,10 +1182,10 @@ let XplayerNode = {
         if (typeof nw !== 'undefined')  {
             XplayerNode.operating = true;
             XplayerNode.n.fs = nw.require('fs');
-            Xplayer.writeToConsole('NODE FOUND!');
+            Xplayer.writeToConsole('- node.js check:', 'FOUND!', 'info');
         }
         else    {
-            Xplayer.writeToConsole('NODE NOT PRESENT.');
+            Xplayer.writeToConsole('- node.js check:', 'not present.', 'info');
         }
     },
 
@@ -1240,10 +1275,31 @@ return;
 };
 
 
-// can be called beyond jq, not waiting for domready
+
+
+
+
+// Build custom console (dedicated for standalone mode)
+
+QConsole.configure({/*dev: true*/ /*startState: 'expanded'*/});
+QConsole.cliRegisterCommands(Xplayer.cliCommands());    // or call after app config init?
+QConsole.available = true;
+$('#console').QC_makeItAConsole();
+
+
+
+
+
+// Check node.js availability
+
+// (can be called beyond jq ready, not waiting for dom)
 XplayerNode.init();
 
 
+
+
+
+// Start app
 
 (() => {
     'use strict'
@@ -1251,15 +1307,6 @@ XplayerNode.init();
     let boot = (incomingConfig) => {
         Xplayer.configure(incomingConfig);
         Xplayer.initialize();
-
-        DigitAll.configure({
-            valueDataKey: 'time',
-            dev: Xplayer.config.dev,
-        });
-        DigitAll.initialize({
-            applyTo: '.digitall',
-            listenUpdate: '.digitall.listenUpdate',
-        });
     }
 
 

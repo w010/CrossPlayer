@@ -9,7 +9,7 @@ let XplayerConfig =
 	"image_filename_auto_ext": 	"jpg",
 
 	"data_dir": 	"./data/default/",
-	
+
 	"dev": false,
 
 	"console_show": true,

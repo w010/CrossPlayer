@@ -1,7 +1,7 @@
 /**
  * DigitAll - Digit Symbol Analog LCD Display
-* 
- * v0.2
+ * 
+ * v0.3
  * 
  * wolo.pl '.' studio
  * 2022
@@ -49,6 +49,8 @@ let DigitAll = {
 
         if (setup?.dev)
             DigitAll.dev = true;
+
+        return DigitAll;
     },
 
 
@@ -91,6 +93,8 @@ let DigitAll = {
                 }, 1000);
             });
         }
+
+        return DigitAll;
     },
 
 
