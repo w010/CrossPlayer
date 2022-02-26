@@ -729,6 +729,14 @@ input.slider-value:focus   {
     
 }
 
+.playing .reel-container .reel,
+.paused .reel-container .reel    {
+    opacity: 1;
+}
+.stopped .reel-container .reel  {
+    opacity: .8;
+}
+
 
 
 /* DIGITALL */

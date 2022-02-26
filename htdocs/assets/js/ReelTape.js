@@ -1,7 +1,7 @@
 /**
  * Reel Tape - animated simulation of oldschool tape player 
  * 
- * v0.1
+ * v0.2
  * 
  * wolo.pl '.' studio
  * 2022
@@ -78,8 +78,8 @@ let ReelTape = {
                      '<div class="power"></div>' +
                      '<div class="readheader">' +
                          '<div class="tape tape-left"></div>' +
-                         '<div class="tape tape-right"></div>' +
                          '<div class="tape tape-middle"></div>' +
+                         '<div class="tape tape-right"></div>' +
                          '<div class="thehead"></div>' +
                      '</div>'));
 
@@ -119,9 +119,13 @@ let ReelTape = {
     runTester: () => {
         ReelTape.configure();
         let testContainer = $(ReelTape.config.testerRunInSelector)
-            .empty().append($('<div id="animated_reel"></div>'));
+            .addClass('high-contrast')
+            .empty().append(
+                $('<h3>ReelTape test playground</h3>'),
+                $('<div id="animated_reel"></div>'),
+                $('<div id="reel_test_controls">[controls]</div>'),
+            );
         ReelTape.initialize();
-        
     },
 
     

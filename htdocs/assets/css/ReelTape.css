@@ -58,7 +58,7 @@
 
 .reel.spin-playing,
 .reel.spin-paused    {
-    opacity: 1;
+    /*opacity: 1;*/
 }
 .reel.spin-stopped    {
     /*opacity: .8;*/
@@ -108,28 +108,33 @@
     width: 8em;
     left: calc(50% - 4em);
     height: 4em;
-    border: 1px solid red;
+    /*border: 1px solid red;*/
 }
 
 .reel .readheader .tape    {
-    border: 1px solid #5f2f2f;
-    background: #ffc720;
-    width: 100%;
-    height: 10px;
+    border: 1px solid #41300d;
+    border-width: 1px 0;
+    background: #2f2510;
+    box-shadow: #060606a1 2px 1px 0px 1px;
+    width: 5em;
+    height: 0.1em;
     position: absolute;
+    z-index: -5;
     bottom: 0;
 }
     .reel .readheader .tape-left    {
-        left: -2em;
-            background: #c97a20;
+        left: -3.20em;
+        bottom: 2.3em;
+        transform: rotate(30deg);
     }
     .reel .readheader .tape-right    {
-        right: -2em;
-            background: rgba(203,29,209,.5);
+        right: -2.92em;
+        bottom: 2.55em;
+        transform: rotate(-40deg);
     }
-    .reel .readheader .middle    {
-            background: #20c997;
-        bottom: 0;
+    .reel .readheader .tape-middle    {
+        bottom: 1em;
+        left: calc(50% - 2.5em);
     }
 .reel .readheader .roll    {
     
@@ -137,12 +142,33 @@
 .reel .readheader .thehead    {
     border: 1px solid #41260f;
     background: #623b11;
+    box-shadow: inset rgb(147 106 45 / 70%) 3px 5px 5px 0px;
     border-radius: 30% 30% 5% 5%;
     bottom: 0.1em;
     position: absolute;
+    z-index: -10;
     width: 80%;
     left: 10%;
-    height: 2em
+    height: 2em;
 }
 
 
+.high-contrast .reel .readheader    {
+    /*border-color: red;*/
+}
+.high-contrast .reel .readheader .tape    {
+    border-color: #5f2f2f;
+    background: #ffc720;
+}
+.high-contrast .reel .readheader .tape-left    {
+    background: #f38d21;
+}
+.high-contrast .reel .readheader .tape-right    {
+    background: rgba(203,29,209, 1);
+}
+.high-contrast .reel .readheader .middle    {
+    background: #20c997;
+}
+.high-contrast .reel .readheader .thehead {
+    background: #854e15;
+}
