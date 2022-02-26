@@ -107,6 +107,7 @@ let Xplayer = {
 
         Xplayer.linkRangeInputs();
         Xplayer.initFancyVolumes();
+        Xplayer.initLogo();
 
         
         $('#collection_title').text(Xplayer.config.collection_title);
@@ -1116,6 +1117,44 @@ console.log('TIME FINAL: ', time);
                     );
 
         return imagePath;
+    },
+
+
+
+    initLogo: () => {
+        let container = $('.appname-container');
+
+        // wrap each char in span
+        let appName = container.find('.appname');
+        let appNameText = appName.text();
+        appName.empty();
+
+        // make one random letter buzz/blink/flicker, like a broken neon
+        let flickerCharNum = Math.floor(Math.random() * appNameText.length);
+
+        for (let t = 0; t < appNameText.length; t++) {
+            let char = appNameText.charAt(t);
+            let charWrapped = $('<span class="char">').text(char);
+            if (flickerCharNum === t)   {
+                let flickerLoop = setInterval(() => {
+                    // reset
+                    charWrapped.attr('class', 'char');
+                    // animations are 1 to 4. lower the chance to draw one of them, by lowering scope's min 
+                    let minChance = -8, maxChance = 4;
+                    let flickerAnimationNum = Math.floor(Math.random() * (maxChance + 1 - minChance) + minChance);
+                    // console.log(flickerAnimationNum);
+                    if (flickerAnimationNum > 0)   {
+                        charWrapped.addClass('flicker'+flickerAnimationNum);
+                    }
+                }, 2000);
+            }
+            appName.append(
+                charWrapped
+            );
+        }
+
+        // duplicate whole appname element
+        container.find('.appname-wrap').clone().appendTo(container);
     },
 
 

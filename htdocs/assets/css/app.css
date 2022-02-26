@@ -140,7 +140,7 @@ a   {
 
 .appname {
     /*font-style: italic;*/
-    font-weight: 700;
+    font-weight: 900;
     text-align: center;
     float: right;
     
@@ -154,11 +154,12 @@ a   {
     /*-webkit-text-fill-color: #9d921ef7;*/
     /*text-shadow: #6ce9adc2 3px 2px 5px;*/
 
-    -webkit-text-fill-color: #b95b0e;
-    -webkit-text-stroke: 1px rgba(15, 215, 58, 0.84);
-    text-shadow: #e34134f5 3px 2px 14px, rgb(70 52 227 / 96%) -9px 5px 8px;
+    /*-webkit-text-fill-color: #b95b0e;*/
+    -webkit-text-stroke: 1px rgba(15, 215, 58, 0.94);
+    text-shadow: #e34134f5 3px 2px 14px, rgb(70 52 227 / 96%) -5px 5px 8px;
 
-    font-size: 2em;
+    font-size: 2.7em;
+    letter-spacing: -2px;
     /*font-family: 'Arvo', sans-serif;*/
     /*font-family: 'Rajdhani', sans-serif;*/
     /*font-family: 'Play', sans-serif;*/
@@ -170,22 +171,85 @@ a   {
     user-select: none;
     float: right;
     margin-right: 0;
-    /*margin-right: 3em;*/
-    /*margin-right: calc(100% - 24em);*/
-    /*margin-left: calc(-100% - 24em);;*/
     /*text-shadow: #e9a46c99 2px 3px 4px;*/
     text-shadow: #e96c6c85 2px 3px 4px;
     font-family: fixedsys, serif;
+    letter-spacing: -2px;
 }
 
-/* tym sprobowac zrobic drop shadow, stroke czy cos. a jesli nie - dodac jeszcze jeden wrap */ 
-.appname-wrap   {
+.appname-container   {
     float: right;
+    position: relative;
     margin-right: 3em;
-    border: 1px solid red;
-    
+    /*border: 1px solid red;*/
 }
-@media (min-width: 992px)   {   .appname-wrap  {   margin-right: 5em;   /*margin-right: calc(100% - 19em);*/    }   }
+@media (min-width: 992px)   {   .appname-container  {   margin-right: 5em;   /*margin-right: calc(100% - 19em);*/    }   }
+
+    /* additional shadow / stroke / fill, using cloned element */ 
+    .appname-wrap + .appname-wrap   {
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+
+    .appname-wrap + .appname-wrap .appname  {
+        /*-webkit-text-stroke: #ffc720;*/
+        -webkit-text-stroke: rgba(15, 215, 58, 1);
+        /* lower than below layer */
+        font-weight: 500;
+        /*text-shadow: #ffc720 3px 2px 14px, rgb(70 52 227 / 96%) 2px 5px 8px;*/
+    }
+    .appname-wrap + .appname-wrap .appname .char  {
+        color: #e8410c;
+    }
+
+/* define animation classes, but set them randomly by js */
+.appname .char.flicker1  {  animation: flicker-a 2s infinite ease-in-out;  }
+.appname .char.flicker2  {  animation: flicker-b 2s infinite ease-in-out;  }
+.appname .char.flicker3  {  animation: flicker-c 2s infinite ease-in-out;  }
+.appname .char.flicker4  {  animation: flicker-d 2s infinite ease-in-out;  }
+
+@keyframes flicker-a {
+    0% {    opacity: 1;     }
+    8% {    opacity: 1;     }
+    10% {   opacity: .5;    }
+    12% {   opacity: 1;     }
+    100% {  opacity: 1;     }
+}
+@keyframes flicker-b {
+    0% {    opacity: 1;     }
+
+    8% {    opacity: 1;     }
+    10% {   opacity: .4;    }
+    12% {   opacity: 1;     }
+    
+    18% {   opacity: 1;     }
+    19% {   opacity: .5;    }
+    20% {   opacity: 1;     }
+    
+    23% {   opacity: 1;     }
+    25% {   opacity: .3;    }
+    29% {   opacity: 1;     }
+
+    100% {  opacity: 1;     }
+}
+@keyframes flicker-c {
+    0% {    opacity: 1;     }
+    53% {   opacity: 1;     }
+    55% {   opacity: .7;    }
+    61% {   opacity: 1;     }
+    71% {   opacity: .5;    }
+    75% {   opacity: 1;     }
+    100% {  opacity: 1;     }
+}
+@keyframes flicker-d {
+    0% {    opacity: 1;     }
+    5% {   opacity: .5;    }
+    10% {   opacity: .9;    }
+    15% {   opacity: .2;    }
+    95% {   opacity: .3;     }
+    100% {  opacity: 1;     }
+}
 
 
 #collection_title   {
