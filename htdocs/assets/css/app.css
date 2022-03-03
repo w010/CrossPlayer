@@ -751,82 +751,7 @@ input.slider-value:focus   {
 }
 
 
-
-.fancy-volume {
-    width: 100%;
-    /*width: 2.2em;*/
-    min-height: 2.2em;
-    position: relative;
-}
-    .fancy-volume .scale  {
-        position: absolute;
-        top: 0;
-        left: calc(50% - 1em);
-        width: 2.4em;
-        height: 2.4em;
-        background-color: #ffc720;
-        border-radius: 50%;
-    }
-    .fancy-volume knob   {
-        display: block;
-        position: absolute;
-        top: calc(50% - 0.9em); /* I don't really understand now why these differs */
-        left: calc(50% - 0.8em); /* offset by: half of (twice difference between Knob and Knob-Turn) */
-        width: 2em;
-        height: 2em;
-
-        background: transparent;
-        border-radius: 49%; /* draw it slightly misshapen, to add some naturals */
-        box-shadow: 3px 2px 6px 0px #080808a6;
-
-        cursor: n-resize;
-    }
-
-        .fancy-volume knob rondo  {
-                /*border: 1px solid pink;*/
-            display: block;
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-                /*background-image: linear-gradient(153deg, #5f2f2f 45%, #1b0f0f 55%);*/
-            background-image: linear-gradient(155deg, #5f2f2f 25%, #1b0f0f 75%);
-            border-radius: 49%;
-        }
-        .fancy-volume knob turn  {
-            /*border: 1px solid #1b0f0fa8;*/
-            border: 1px solid rgba(110, 54, 54, 0.66);
-                /*border: 1px solid blue;*/
-            display: block;
-            position: absolute;
-            top: 0.4em; /* offset by: half of (difference between Knob and Knob-Turn) */
-            left: 0.4em;
-            width: 1.2em;
-            height: 1.2em;
-
-                /*background-image: linear-gradient(155deg, #1b0f0f 45%, #5f2f2f 55%);*/
-            background-image: linear-gradient(155deg, #1b0f0f 25%, #5f2f2f 75%);
-            border-radius: 35%;
-            box-shadow: 3px 2px 6px 0px #080808a6;
-        }
-        .fancy-volume knob .cut  {
-            
-        }
-        .fancy-volume knob turn .cut  {
-            border: 1px solid #bd7f12bf;
-            display: inline-block;
-            position: absolute;
-            height: 0.5em;
-            width: 0.05em;
-            top: -1px;
-            left: calc(50% - 0.025em);
-
-            box-shadow: 3px 2px 6px 0px #080808a6;
-            border-radius: 3px;
-        }
-
-
+/* VOLUME */
 
 .ctrl-volume	{
 }
@@ -835,6 +760,7 @@ input.slider-value:focus   {
 .ctrl-volume input[type="range"]	{
 	max-width: -webkit-fill-available;
 }
+/* todo: some of these possibly can be moved to lib css */
 .ctrl-volume input[type="text"]	{
 	background: none;
 	border: none;
@@ -850,6 +776,11 @@ input.slider-value:focus   {
 	margin-top: 11px;
 }
 
+
+/* VOLUME CONTROLS */
+.volume-rotarypot {
+    width: 100%;
+}
 
 
 

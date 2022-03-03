@@ -24,7 +24,7 @@ let Utility = {
         let radians = deg * Math.PI / 180;
         let sin = Math.sin(radians);
         let cos = Math.cos(radians);
-    
+
         return {
             x: Math.round((x * cos + y * sin) * 100) / 100,
             y: Math.round((-x * sin + y * cos) * 100) / 100
@@ -51,13 +51,16 @@ let Utility = {
      * @param deg {number}
      */
     gradientAngleUpdate: (el, deg) => {
+        if (!el.get(0)) {
+            return;
+        }
 
         // look for original css we might have stored before, - or read from window computed and store for later
         let dataOriginalCss = el.prop('data-originalCssGradient');
         if (!dataOriginalCss)   {
             // expect this string like that: "linear-gradient(155deg, rgb(95, 47, 47) 25%, rgb(27, 15, 15) 75%)" if this ever stops to work, check this first!
             let _originalComputedStyle = window.getComputedStyle(el.get(0)).backgroundImage ?? '';
-            let _parts = _originalComputedStyle.match(/linear-gradient\((.*)deg,(.*)\)/);
+            let _parts = _originalComputedStyle.match(/linear-gradient\((.*)deg,(.*)\)/) || [];
             dataOriginalCss = {
                 gradientAngle: _parts[1] ?? 0,    // what we need is the original angle value,
                 restOfDefinition: _parts[2] ?? '', // and the following original string, like colours etc. needed to be set with angle, as a whole
@@ -86,6 +89,9 @@ let Utility = {
      * @param deg {number}
      */
     shadowDropOffsetRecalculate: (el, deg) => {
+        if (!el.get(0)) {
+            return;
+        }
 
         // look for original css we might have stored before, - or read from window computed and store for later
         let dataOriginalCss = el.prop('data-originalCssShadow');
@@ -120,5 +126,52 @@ let Utility = {
 
             // $(el).find('.cut').css({boxShadow: (inset ? 'inset ' : '') + newOffset[0] + 'px ' + newOffset[1] + 'px ' + blurSpreadColor});         
             //$(el).css({boxShadow: (inset ? 'inset ' : '') + newOffset[0] + 'px ' + newOffset[1] + 'px ' + blurSpreadColor});
+    },
+
+
+    /**
+     * Get random number from given scope
+     * @param numA MAX value if !B, or MIN if both specified
+     * @param numB optional MAX value
+     */
+    randomInt: (numA, numB) => {
+        if (typeof numB === 'undefined') {
+            return Math.floor(Math.random() * (numA + 1));
+        }
+        let min = parseInt(numA);
+        let max = parseInt(numB);
+        // validate
+        if (min >= max) {
+            return max;
+        }
+        // final From-To randomize
+        return Math.floor(Math.random() * (max + 1 - min) + min);
+    },
+
+
+    /**
+     * Force the value to be within given min-max scope
+     * @param value number
+     * @param min number
+     * @param max number
+     * @param asFloat bool
+     */
+    forceNumberInScope: (value, min, max, asFloat) => {
+        if (asFloat)    {
+            value = parseFloat(value);
+            min = parseFloat(min);
+            max = parseFloat(max);    
+        }
+        else    {
+            value = parseInt(value);
+            min = parseInt(min);
+            max = parseInt(max);
+        }
+        // validate
+        if (min >= max) {
+            return max;
+        }
+        // final From-To force
+        return Math.min(Math.max(value, min), max);
     },
 }

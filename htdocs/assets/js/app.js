@@ -22,6 +22,7 @@ let Xplayer = {
     duration: 0,
 
     // to make sure it already exist before reading value
+    // todo later: move to VolumeControls?
     crossfaderReady: false,
 
     // configuration of current collection data
@@ -101,7 +102,7 @@ let Xplayer = {
 
         // Embed player instances
         Xplayer.config?.tracks.forEach((fileConf, i) => {
-            Xplayer.loadFile(i, fileConf);
+            Xplayer.loadTrack(i, fileConf);
         });
         
 
@@ -196,7 +197,7 @@ let Xplayer = {
         Xplayer.initCrossfader();
 
 
-        $('.appversion').bind('dblclick', () => {
+        $('.appversion').on('dblclick', () => {
             $('body').toggleClass('dev-mode');
         });
 
@@ -346,6 +347,7 @@ console.log('TIME FINAL: ', time);
     },
 
 
+    // todo: move to VolumeControls
     initCrossfader: () => {
         $('#crossfader-ab').slider({
             range: 'min',
@@ -441,108 +443,67 @@ console.log('TIME FINAL: ', time);
         $('#crossfader-ab').slider( 'option', 'value', value);
 
         // apply changes to tracks volume balance
-        $('#volume-slider_A')
-            .val(Math.min(Math.max(100 - value, 0), 100))
+        $('#volume_pot_A')
+            .val( Utility.forceNumberInScope(100 - value, 0, 100) )
             .trigger('change');
-
-        $('#volume-slider_B')
-            .val(Math.min(Math.max(100 + value, 0), 100))
+// todo: change characteristics / how it calculates A B volumes
+// todo: change these to VolumeControls call, write method to set this value and take care of scope, events etc.
+        $('#volume_pot_B')
+            .val( Utility.forceNumberInScope(100 + value, 0, 100) )
             .trigger('change');
     },
-    
-    
-    
+
+
+
     initFancyVolumes: () => {
-        $('.fancy-volume.is-loading').each( (i, el) => {
-            let mainInput = $('#'+$(el).attr('id').replace('__fancy', ''));
-            Xplayer.setFancyVolumeState(el, mainInput, $(mainInput)[0].value);
-            $(el).removeClass('is-loading');
-        });
+        VolumeControls.configure();
+            // don't need to use autoinit here, only set global configuration, the rest will be done on item build/embed 
+            //.initialize({/*applyTo: '.other-selector'*/});
     },
-    
-    
-    setFancyVolumeState: (el, mainInput, value) => {
-        
-        let valuePercent = value ?? $(mainInput)[0].value;   // value
-        if (valuePercent < 0)   {
-            valuePercent = 0;
-        }
-        
-        // I assume here, that every volume slider input has values 0-100 and that we can
-        // here basically expect the percentage value. if you need to use it with other scope,
-        // pass them and calculate valuePercent here using them.
-        //let valuePercent = $(el).data('value');
-        // todo: set these using data prop
-        let minRotationAngle = 225;     // about 7:30
-        let maxRotationAngle = 135;     // about 4:30
-        let rotateOrientation = 'R';     // clockwise: value +
-        
-        // todo later: store references to them and just iterate, instead of querying each time
-        let knob = $(el).find('knob');
-        let turn = $(el).find('turn');
-        let rondo = $(el).find('rondo');
-
-
-        // calculate degree between these min/max, respecting rotation dir. todo later: orientation=L
-        if (rotateOrientation === 'R')   {
-            let angleBetween = 360-minRotationAngle + maxRotationAngle;
-
-            // calculate degree for incoming percent value
-            let degreesFromPercentOfScope = angleBetween * valuePercent / 100;
-            // but it's calculated according to 0 - so we must go back by minrotation degrees
-            let finalAngle = Utility.angleWithinOneFullRotation(minRotationAngle + degreesFromPercentOfScope);
-            // console.log('DEG', degreesFromPercentOfScope);
-            // console.log('finalAngle', finalAngle);
-
-            // - Rotate the whole controller item
-
-            // $(el).css("transform", 'rotate('+finalAngle+'deg);'});   // doesn't work. need this:
-            $(knob).css({ WebkitTransform: 'rotate(' + finalAngle + 'deg)'});
-
-
-            // - Rotation visual corrections
-
-            // -- Gradient angle update
-            // --- Rondo
-            Utility.gradientAngleUpdate(rondo, finalAngle);
-            // --- Turn
-            Utility.gradientAngleUpdate(turn, finalAngle);
-
-            // -- Shadow offset recalculate
-            // --- Knob
-            Utility.shadowDropOffsetRecalculate(knob, finalAngle);
-            // --- Turn
-            Utility.shadowDropOffsetRecalculate(turn, finalAngle);
-        }
-    },
-
 
 
     /**
-     * link range inputs with their text fields
+     * Set player volume, using percentage scale
+     * @param volume int Volume as number 0 to 100
+     * @param player? object|jQuery [optional] Player element
+     * @param player_ident? string [optional] Instance of player by given identifier    // todo later, on use  
      */
-    linkRangeInputs: () => {
-        $( 'input[type=range]' ).each( (i, el) => {
+    setPlayerVolumePercent: (volume, player, player_ident) => {
+        // set player volume - it expects float between 0 and 1
+        player[0].volume = Utility.forceNumberInScope(volume, 0, 100) / 100;
+    },
+
+
+    /**
+     * todo: move to utility. test first
+     * link range inputs with their text fields
+     * (omit volume manipulators - they link on their own)
+     */
+    linkRangeInputs: (selector) => {
+        if (!selector)
+            //selector = 'input[type=range]';
+            selector = ':not(.volume-manipulator) input[type=range]';
+        $( selector ).each( (i, el) => {
             // take range input and find its text input by id
             let range = $(el),
                 text = $( '#' + range.prop('id').replace('__range', '') );
+
             text.on( 'keyup change', () => {
                 // prevent typing beyond range's scope
-                let value = Math.min(Math.max(text.val(), range.prop('min')), range.prop('max'));
+                let value = Utility.forceNumberInScope(text.val(), range.prop('min'), range.prop('max'));
                 text.val( value );
                 range.val( value );
-                Xplayer.setFancyVolumeState($('#'+text.prop('id')+'__fancy'), text, value)
-            });
+            }).addClass('linked-to-rangeinput');
+
             range.on( 'input change', () => {
                 text.val( range.val() );
                 text.trigger('change');
-                Xplayer.setFancyVolumeState($('#'+text.prop('id')+'__fancy'), text, range.val())
-            });
+            }).addClass('linked-to-textinput');
         });
     },
 
 
-    loadFile: (i, fileConf) => {
+    loadTrack: (i, fileConf) => {
         
         // check input data
         let filename = fileConf?.filename;
@@ -820,98 +781,36 @@ console.log('TIME FINAL: ', time);
         let el_controls = $('<div class="controls  me-2   position-absolute  bottom-0  begin-0">')
                 .append(ctrl_mute)
                 .append(ctrl_solo);
-        
-        
-        let ctrl_volume = $('<input type="range" id="volume-slider_'+load_as+'__range" class="dev" max="100" value="100">'); 
-        let ctrl_volume_linked = $('<input type="text" id="volume-slider_'+load_as+'" class="range-text" value="100">'); 
-        let ctrl_volume_fancy = $('<div id="volume-slider_'+load_as+'__fancy" class="fancy-volume is-loading">')
-                .append(
-                        $('<div class="scale"><span class="line"></span><span class="line"></span></div>'),
-                        $('<knob>').append(
-                            $('<rondo><span class="cut">'),   // bottom part of knob, above scale
-                            $('<turn><span class="cut">')
-                        )
-                ); 
 
-        let el_controls_vol = $('<div class="me-2  text-end  ctrl-volume">')
-                .append(
-                        ctrl_volume_fancy, ctrl_volume, ctrl_volume_linked);
-        
+
+        /*let _parts_VolumeCtrl = VolumeControls.prepareMarkupParts_VolumeCtrl(load_as, '', {value: 11, max: 80,});
+
+        let ctrl_volume = _parts_VolumeCtrl.ctrl_volume; 
+        let ctrl_volume_text = _parts_VolumeCtrl.ctrl_volume_text; 
+        let ctrl_volume_manipulator = _parts_VolumeCtrl.ctrl_volume_manipulator;*/
+
+        let el_volumectrl = $('<volume id="player_'+load_as+'" class="me-2  text-end  ctrl-volume  volume-ctrl  is-loading" data-type="RotaryPot">');
+                // .append(
+                //         ctrl_volume_manipulator, ctrl_volume, ctrl_volume_text);
+
         let el_status = $('<div class="status"><span class="indicator"></span><p></p>')
-                .append($('<p class="dev">').text(Xplayer.config.data_dir + filename));
-        
-        
-        
-        ctrl_volume_linked.bind('input change', () => {
-             let value = parseInt($(ctrl_volume_linked)[0].value);
-             let volume = value ? Math.min(Math.max(value / 100, 0), 1) : 0;
-             el_player[0].volume = volume;
+                .append(
+                        $('<p class="dev">').text(Xplayer.config.data_dir + filename));
+
+
+        // bind listeners
+
+        // set the player volume, when VolCtrl volume value has changed
+        el_volumectrl.on('set_volume.vc.ctrl', (el, param_data) => {
+
+            // value passed by the trigger
+            Xplayer.setPlayerVolumePercent(param_data.volumeValue, el_player);
         });
 
-                        
-                        ctrl_volume_fancy.bind('mousedown', (event) => {
 
-                            let startY = event.clientY;
-
-                            function handleMove(clientX, clientY) {
-                                let deltaPx = startY - clientY;
-                                
-                                // without that check and unregistering listener also here, it sometimes doesn't run mouseup,
-                                // (like, when released above audioplayer) and still handles move
-                                if (document.body.matches(":active"))   {
-                                    //console.log('== MOVE BY', deltaPx);
-
-                                    // update value in related hidden input (and possibly all synced with it, like range)
-                                    let mainInput = $('#'+ctrl_volume_fancy.attr('id').replace('__fancy', ''));
-                                    let valueCurrent = $(mainInput)[0].value;
-
-                                    // now from px distance calculate the value change. we cannot assume 1px = val change by 1, so estimate a modifier number to slow the responsibility a little
-                                    let valUpdateSpeedReductionFactor = 0.05;
-                                    let valueNew = parseInt(valueCurrent) + (deltaPx * valUpdateSpeedReductionFactor);
-                                    
-                                    valueNew = valueNew.toFixed(2);
-                                    // console.log('valueNew', valueNew);
-                                    //console.log('- VALUE CHANGE BY:', deltaPx * valUpdateSpeedReductionFactor);
-
-                                    Xplayer.setFancyVolumeState(ctrl_volume_fancy, mainInput, valueNew);
-                                    mainInput[0].value = valueNew;
-                                    $(mainInput[0]).trigger('change');
-                                    $(mainInput[0]).trigger('input');
-
-                                    // reset calculation ref to current, to smoothen the behaviour
-                                    if (valueNew >= 100 || valueNew <= 0) {
-                                        startY = clientY;
-                                    }
-                                }
-                                else    {
-                                    document.removeEventListener('mousemove', onMouseMove);
-                                    console.log('SHOULD UNREGISTER LISTENER');
-                                }
-
-                            }
-
-                            function onMouseMove(event) {
-                                event.preventDefault();
-                                handleMove(event.clientX, event.clientY);
-                            }
-
-                            // track the distance and sync move with range input
-                            document.addEventListener('mousemove', onMouseMove);
-
-                            // mb released - finish - exit and unbind
-                            document.onmouseup = function(e){
-                                e.preventDefault();
-                                console.log('MOUSE UP - clean MOUSEMOVE listener, EXIT');
-                                document.removeEventListener('mousemove', onMouseMove);
-                                //ctrl_volume_fancy[0].onmouseup = null;
-                                // todo: this still hits on range drag.
-                            };
-                        });
-
-        
         // todo: jesli embed wywolany zostal gdy state bylo playing, to powinien striggerowac play i sync tempa
-        
-        
+
+
         let instance_box = $('<div class="rounded-3 p-3  play-item  player-active  state_loading">');
         let imageElement = Xplayer.imageElPrepare(imagePath);
 
@@ -926,22 +825,43 @@ console.log('TIME FINAL: ', time);
                     imageElement
                 ),
                 $('<div class="col-2  col-sm-3  col-md-2  col-lg-2  col-xl-2">').append(
-                    el_controls_vol
+                    el_volumectrl
                 )
             ),
             el_player
         );
 
+
         
-                
         // embed
 
         container.append(instance_box);
 
-        Xplayer.linkRangeInputs();
-        Xplayer.initFancyVolumes();
+
+        // todo later: get from conf.
+        // remember that volumes of A and B might be overridden later here, though - when crossfader inits, will be recalculated,
+        // based on its start value, if set. 
+        let startVolume = 100;
+
+
+        // init fancy volume
+
+        el_volumectrl.vc_makeRotaryPot({
+            value: startVolume,
+            /*markupPrepareFunc: (identifier, manipulatorType, conf) => {
+                return VolumeControls.prepareMarkupParts_VolumeCtrl(identifier, manipulatorType, conf);
+            },*/
+            /*markupBuildFunc: (el, preparedParts, conf) => {
+                VolumeControls.buildMarkup_VolumeCtrl(el, preparedParts, conf);
+            },*/
+        });
+
+        Xplayer.setPlayerVolumePercent(startVolume, el_player);
+
+
 
         // on embed respect crossfader position
+
         // if crossfader is ready (usually when use button play as...)
         if (Xplayer.crossfaderReady)    {
             // reinit crossfader with its current val - it will handle volumes on A and B
@@ -965,7 +885,7 @@ console.log('TIME FINAL: ', time);
 
         // check, to run callback only once
         let callbackCalled = false;
-        el_player[0].addEventListener('canplay', () => {
+        el_player.on('canplay', () => {
             instance_box.removeClass('state_loading');
 
             if (callbackCalled === false)   {
@@ -1053,7 +973,7 @@ console.log('TIME FINAL: ', time);
                     </div>
                     <div class="col-md-4">
                         <div class="me-2">
-                            <input id="volume-slider" max="100" type="range" value="100">
+                            <input id="volume_slider" max="100" type="range" value="100">
                         </div>
                     </div>
                 </div>
@@ -1127,7 +1047,7 @@ console.log('TIME FINAL: ', time);
         appName.empty();
 
         // make one random letter buzz/blink/flicker, like a broken neon
-        let flickerCharNum = Math.floor(Math.random() * appNameText.length);
+        let flickerCharNum = Utility.randomInt(appNameText.length);
 
         for (let t = 0; t < appNameText.length; t++) {
             let char = appNameText.charAt(t);
@@ -1158,7 +1078,7 @@ console.log('TIME FINAL: ', time);
 
             // animations are 1 to 4. lower the chance to draw one of them, by lowering scope's min 
             let minChance = -24, maxChance = 4;
-            let flickerAnimationNum = Math.floor(Math.random() * (maxChance + 1 - minChance) + minChance);
+            let flickerAnimationNum = Utility.randomInt(minChance, maxChance);
 
             // set that class to both copies!
             $(flickeringItems).each((i, $el) => {
@@ -1360,6 +1280,10 @@ XplayerNode.init();
 
 (() => {
     'use strict'
+
+//$('.navbar').empty();
+// return VolumeControls.runTester('VolumeRotaryPot');
+// return VolumeControls.runTester('Crossfader');
 
     let boot = (incomingConfig) => {
         Xplayer.configure(incomingConfig);

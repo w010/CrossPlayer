@@ -20,7 +20,7 @@
 
 
 /**
- * 
+ * @requires Utility
  */
 let QConsole = {
 
@@ -113,8 +113,7 @@ let QConsole = {
      */
     setupInstance: (el) => {
         if (QConsole.el)    {
-            console.warn('setupInstance: Console ALREADY SET! exit');
-            return;
+            return console.warn('setupInstance: Console ALREADY SET! exit');
         }
 
         let Qel = QConsole.el = $(el);
@@ -320,7 +319,7 @@ let QConsole = {
     },
 
     cliHistory: (e, direction) => {
-        direction = Math.min(Math.max(parseInt(direction), -1), 1);  // force between -1 and 1, exit when no history or no direction given
+        direction = Utility.forceNumberInScope(parseInt(direction),-1,1);  // force between -1 and 1, exit when no history or no direction given
         if (!QConsole.cli.history.length || !direction)
             return;
         let cliEl = e.currentTarget;
@@ -331,7 +330,7 @@ let QConsole = {
         // update current history recall pointer (will reset on another cmd call)
         QConsole.cli.historyPosition += direction;
         // force position - min: -1, max: history.length-1  (min: -1: means it will also show empty as the oldest one. change to 0 to end on the first called command)
-        QConsole.cli.historyPosition = Math.min(Math.max(QConsole.cli.historyPosition, -1), QConsole.cli.history.length-1);
+        QConsole.cli.historyPosition = Utility.forceNumberInScope(QConsole.cli.historyPosition, -1,QConsole.cli.history.length - 1);
     },
 
     /**
