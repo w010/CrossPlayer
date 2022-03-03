@@ -1,86 +1,202 @@
 
-:root {
-    /* scale factor */
+volume {
+
+    /*
+        Configuration & default theme
+        To customize override these vars in app's local sheet
+    */
+
+
+    /* size factor (to easy resize) */
     --vc-size: 1;
-    /* dimensions */
-    --vc-width: 2.4em;
-    --vc-height: 2.4em;
+
+    /* whole item (ctrl) with scale etc. */
+    --vc-width-overall: 2.4em;
+    --vc-height-overall: 2.4em;
+
+
+    /* Scale */
+    --vc-scale-width: var( --vc-width-overall );
+    --vc-scale-height: var( --vc-height-overall );
+
+
+    /* Knob */
+    --vc-knob-width: 2em;
+    --vc-knob-height: 2em;
+    /* this calc doesn't do what's supposed, so put them by hand */
+    /*--vc-knob-offset-x: calc((var(--vc-width-overall) - var(--vc-width-knob)) * 50%);*/
+    --vc-knob-offset-x: 0.2em;
+    --vc-knob-offset-y: 0.2em;
+    --vc-knob-border: none;
+    --vc-knob-border-radius: 49%;   /* draw it slightly misshapen, to add some naturals */
+    --vc-knob-background: transparent;
+    --vc-knob-box-shadow: 3px 2px 6px 0px #080808a6;
+
+
+    /* Rondo: 100% of knob */
+    --vc-rondo-width: 100%;
+    --vc-rondo-height: 100%;
+    --vc-rondo-border: none;
+    --vc-rondo-border-radius: 49%;
+    --vc-rondo-background: linear-gradient(155deg, #5f2f2f 25%, #1b0f0f 75%);
+    --vc-rondo-box-shadow: none;
+
+
+    /* Turn part of the knob (the holder, or how to call that thing.) */
+    --vc-turn-width: 1.2em;
+    --vc-turn-height: 1.2em;
+    --vc-turn-offset-x: 0.4em;  /* offset by: half of (difference between Knob and Knob-Turn) */
+    --vc-turn-offset-y: 0.4em;
+    --vc-turn-border: 1px solid rgba(110, 54, 54, 0.66);    /* 1px solid #1b0f0fa8; */
+    --vc-turn-border-radius: 35%;
+    --vc-turn-background: linear-gradient(155deg, #1b0f0f 25%, #5f2f2f 75%);
+    --vc-turn-box-shadow: 3px 2px 6px 0px #080808a6;
+
+
+    /* Pointer line (one on the KNOB) */
+    --vc-pointer_turn-offset-y: -1px;
+    --vc-pointer_turn-offset-x: 0;
+    --vc-pointer_turn-width: 0.05em;
+    --vc-pointer_turn-height: 0.5em;
+    --vc-pointer_turn-border: 1px solid #bd7f12bf;
+    --vc-pointer_turn-border-radius: 3px;
+    --vc-pointer_turn-box-shadow: 3px 2px 6px 0px #080808a6;
+
+
+    /* todo: Pointer line (one on the RONDO) */
+    --vc-pointer_rondo-offset-y: -1px;
+    --vc-pointer_rondo-offset-x: 0;
+    --vc-pointer_rondo-width: 0.05em;
+    --vc-pointer_rondo-height: 0.5em;
+
+
+    /* text input */
+    --vc-input-text-width: 2.6em;
+    --vc-input-text-font-size: 0.8em;
+    --vc-input-text-margin: 0.2em auto 0;
+    --vc-input-text-border: 1px solid #77777744;
 }
 
 
 volume, manipulator, scale, knob, rondo, turn, pointer    {
     display: block;
 }
-manipulator {
-}
 
-.volume-rotarypot {
-    width: 2.2em;
-    min-height: 2.2em;
+volume {
     position: relative;
 }
-    .volume-rotarypot scale  {
+.volume-rotarypot {
+
+}
+
+    volume manipulator {
+            /*border: 1px solid red;*/
+        width: calc(var(--vc-size) *        var( --vc-width-overall ));
+        min-height: calc(var(--vc-size) *   var( --vc-height-overall ));
+        position: relative;
+        margin: 0 auto;
+    }
+
+    volume.oftype-rotarypot scale  {
         position: absolute;
         top: 0;
-        left: calc(50% - 1em);
-        width: 2.4em;
-        height: 2.4em;
-        background-color: #ffc720;
+        width: calc(var(--vc-size) *        var( --vc-scale-width ));
+        height: calc(var(--vc-size) *       var( --vc-scale-height ));
         border-radius: 50%;
+        
+            background-color: #ffc720;
     }
-    .volume-rotarypot knob   {
+    volume.oftype-rotarypot knob   {
         position: absolute;
-        top: calc(50% - 0.9em); /* I don't really understand now why these differs */
-        left: calc(50% - 0.8em); /* offset by: half of (twice difference between Knob and Knob-Turn) */
-        width: 2em;
-        height: 2em;
+        top: calc(var(--vc-size) *          var( --vc-knob-offset-y ));
+        left: calc(var(--vc-size) *         var( --vc-knob-offset-x ));
+        width: calc(var(--vc-size) *        var( --vc-knob-width ));
+        height: calc(var(--vc-size) *       var( --vc-knob-height ));
 
-        background: transparent;
-        border-radius: 49%; /* draw it slightly misshapen, to add some naturals */
-        box-shadow: 3px 2px 6px 0px #080808a6;
+        border: var( --vc-knob-border );
+        border-radius: var( --vc-knob-border-radius );
+        background: var( --vc-knob-background );
+        box-shadow: var( --vc-knob-box-shadow );
 
         cursor: n-resize;
     }
 
-        .volume-rotarypot knob rondo  {
+        volume.oftype-rotarypot knob rondo  {
                 /*border: 1px solid pink;*/
             position: absolute;
-            width: 100%;
-            height: 100%;
+            width: var( --vc-rondo-width );
+            height: var( --vc-rondo-height );
             top: 0;
             left: 0;
-                /*background-image: linear-gradient(153deg, #5f2f2f 45%, #1b0f0f 55%);*/
-            background-image: linear-gradient(155deg, #5f2f2f 25%, #1b0f0f 75%);
-            border-radius: 49%;
-        }
-        .volume-rotarypot knob turn  {
-            /*border: 1px solid #1b0f0fa8;*/
-            border: 1px solid rgba(110, 54, 54, 0.66);
-                /*border: 1px solid blue;*/
-            position: absolute;
-            top: 0.4em; /* offset by: half of (difference between Knob and Knob-Turn) */
-            left: 0.4em;
-            width: 1.2em;
-            height: 1.2em;
 
-                /*background-image: linear-gradient(155deg, #1b0f0f 45%, #5f2f2f 55%);*/
-            background-image: linear-gradient(155deg, #1b0f0f 25%, #5f2f2f 75%);
-            border-radius: 35%;
-            box-shadow: 3px 2px 6px 0px #080808a6;
+            border: var( --vc-rondo-border );
+            border-radius: var( --vc-rondo-border-radius );
+            background: var( --vc-rondo-background );
+            box-shadow: var( --vc-rondo-box-shadow );
         }
-        .volume-rotarypot knob pointer  {
+        volume.oftype-rotarypot knob turn  {
+
+            position: absolute;
+            top: calc(var(--vc-size) *      var( --vc-turn-offset-y ));
+            left: calc(var(--vc-size) *     var( --vc-turn-offset-x ));
+            width: calc(var(--vc-size) *    var( --vc-turn-width ));
+            height: calc(var(--vc-size) *   var( --vc-turn-height ));
+
+            border: var( --vc-turn-border );
+            border-radius: var( --vc-turn-border-radius );
+            background: var( --vc-turn-background );
+            box-shadow: var( --vc-turn-box-shadow );
+        }
+        /* pointer can be on turn and on rondo - they are separated things */
+        volume.oftype-rotarypot knob pointer  {
             
         }
-        .volume-rotarypot knob turn pointer {
-            border: 1px solid #bd7f12bf;
-            display: inline-block;
-            position: absolute;
-            height: 0.5em;
-            width: 0.05em;
-            top: -1px;
-            left: calc(50% - 0.025em);
+        volume.oftype-rotarypot knob turn pointer {
+            display: block;
+            position: relative;
+            margin: 0 auto;
 
-            box-shadow: 3px 2px 6px 0px #080808a6;
-            border-radius: 3px;
+            top: calc(var(--vc-size) *      var( --vc-pointer_turn-offset-y ));
+            left: calc(var(--vc-size) *     var( --vc-pointer_turn-offset-x ));
+            width: calc(var(--vc-size) *    var( --vc-pointer_turn-width ));
+            height: calc(var(--vc-size) *   var( --vc-pointer_turn-height ));
+
+            border: var( --vc-pointer_turn-border );
+            border-radius: var( --vc-pointer_turn-border-radius );
+            box-shadow: var( --vc-pointer_turn-box-shadow );
         }
+
+
+/* accompany linked fields */
+
+volume input[type="text"],
+volume input[type="range"]	{
+	max-width: -webkit-fill-available;
+    display: block;
+    margin: 0 auto;
+}
+volume input[type="range"]	{
+    width: -webkit-fill-available;
+    margin: var( --vc-input-text-margin );
+}
+volume input[type="text"]   {
+    width: calc(var(--vc-size) *    var( --vc-input-text-width ));
+    margin: var( --vc-input-text-margin );
+    font-size: calc(var(--vc-size) *    var( --vc-input-text-font-size ));
+    text-align: center;
+    border: var( --vc-input-text-border );
+
+    outline: none;
+    background: none;
+	caret-color: transparent;
+	cursor: default;
+}
+
+
+
+/* consider showing type=range only on debug: */
+
+/*volume input[type="range"]	    {   display: none;  }*/
+/*.dev volume input[type="range"]	{   display: initial;  }*/
+
 

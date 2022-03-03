@@ -106,7 +106,7 @@ let Xplayer = {
         });
         
 
-        Xplayer.linkRangeInputs();
+        //Xplayer.linkRangeInputs();
         Xplayer.initFancyVolumes();
         Xplayer.initLogo();
 
@@ -482,7 +482,7 @@ console.log('TIME FINAL: ', time);
     linkRangeInputs: (selector) => {
         if (!selector)
             //selector = 'input[type=range]';
-            selector = ':not(.volume-manipulator) input[type=range]';
+            selector = ':not(volume) input[type=range]';
         $( selector ).each( (i, el) => {
             // take range input and find its text input by id
             let range = $(el),
@@ -765,6 +765,10 @@ console.log('TIME FINAL: ', time);
         let audioFileType = audioFilenameParts.length > 1 ? audioFilenameParts.pop() : 'mp3';
         let audioFilenameBase = audioFilenameParts.join('.');
         let imagePath = Xplayer.imageDetermine(fileConf, audioFilenameBase, true);
+        // todo later: get from conf.
+        // remember that volumes of A and B might be overridden later here, though - when crossfader inits, will be recalculated,
+        // based on its start value, if set. 
+        let startVolume = 100;
 
 
         // build markup
@@ -782,30 +786,13 @@ console.log('TIME FINAL: ', time);
                 .append(ctrl_mute)
                 .append(ctrl_solo);
 
-
-        /*let _parts_VolumeCtrl = VolumeControls.prepareMarkupParts_VolumeCtrl(load_as, '', {value: 11, max: 80,});
-
-        let ctrl_volume = _parts_VolumeCtrl.ctrl_volume; 
-        let ctrl_volume_text = _parts_VolumeCtrl.ctrl_volume_text; 
-        let ctrl_volume_manipulator = _parts_VolumeCtrl.ctrl_volume_manipulator;*/
-
-        let el_volumectrl = $('<volume id="player_'+load_as+'" class="me-2  text-end  ctrl-volume  volume-ctrl  is-loading" data-type="RotaryPot">');
-                // .append(
-                //         ctrl_volume_manipulator, ctrl_volume, ctrl_volume_text);
-
         let el_status = $('<div class="status"><span class="indicator"></span><p></p>')
                 .append(
                         $('<p class="dev">').text(Xplayer.config.data_dir + filename));
 
 
-        // bind listeners
-
-        // set the player volume, when VolCtrl volume value has changed
-        el_volumectrl.on('set_volume.vc.ctrl', (el, param_data) => {
-
-            // value passed by the trigger
-            Xplayer.setPlayerVolumePercent(param_data.volumeValue, el_player);
-        });
+        // fancy volume
+        let el_volumectrl = $('<volume id="player_'+load_as+'" class="me-2  text-center   volume-ctrl  is-loading" data-type="RotaryPot">');
 
 
         // todo: jesli embed wywolany zostal gdy state bylo playing, to powinien striggerowac play i sync tempa
@@ -838,13 +825,8 @@ console.log('TIME FINAL: ', time);
         container.append(instance_box);
 
 
-        // todo later: get from conf.
-        // remember that volumes of A and B might be overridden later here, though - when crossfader inits, will be recalculated,
-        // based on its start value, if set. 
-        let startVolume = 100;
 
-
-        // init fancy volume
+        // init Fancy Volume (must be after embed) [todo: find out why exactly)
 
         el_volumectrl.vc_makeRotaryPot({
             value: startVolume,
@@ -856,7 +838,17 @@ console.log('TIME FINAL: ', time);
             },*/
         });
 
+        // set the player volume, when VolCtrl volume value has changed
+        el_volumectrl.on('set_volume.vc.ctrl', (el, param_data) => {
+
+            // value passed by the trigger
+            Xplayer.setPlayerVolumePercent(param_data.volumeValue, el_player);
+        });
+
+        // set starting value 
         Xplayer.setPlayerVolumePercent(startVolume, el_player);
+
+
 
 
 

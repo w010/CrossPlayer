@@ -753,40 +753,49 @@ input.slider-value:focus   {
 
 /* VOLUME */
 
-.ctrl-volume	{
+volume	{
+    --vc-input-text-border: transparent;
+
+        /* for tests only */
+        /* short gradient, for testing rotation angle */
+        /* --vc-rondo-background: linear-gradient(153deg, #5f2f2f 48%, #1b0f0f 52%);*/
+        /* --vc-turn-background: linear-gradient(155deg, #1b0f0f 48%, #5f2f2f 52%);*/
 }
 
-.ctrl-volume input[type="text"],
-.ctrl-volume input[type="range"]	{
+volume input[type="text"],
+volume input[type="range"]	{
 	max-width: -webkit-fill-available;
 }
 /* todo: some of these possibly can be moved to lib css */
-.ctrl-volume input[type="text"]	{
-	background: none;
-	border: none;
-	outline: none;
-	caret-color: transparent;
-	cursor: default;
+volume input[type="text"]	{
+	border-color: transparent;
+        /*border-color: red;*/
 	font-weight: bold;
-	font-family: Tahoma, Arial, serif;
-	font-size: 0.8em;
-	width: 51px;
+	/*font-family: Tahoma, Arial, serif;*/
+    font-family: Consolas, serif;
 	color: #8d8d8d;
-	text-align: center;
-	margin-top: 11px;
 }
+
+
+volume input[type="range"]	    {   display: none;  }
+.dev-mode volume input[type="range"]	{   display: initial;  }
 
 
 /* VOLUME CONTROLS */
-.volume-rotarypot {
+volume.oftype-rotarypot {
     width: 100%;
 }
+    volume.oftype-rotarypot#vc_rotarypot_test {
+        width: 30em;
+    }
+
 
 
 
 /* REEL TAPE PLAYER */
 
-:root {
+/*:root { like in volumectrl! not needed in root */
+.reel-container {
     
 }
 

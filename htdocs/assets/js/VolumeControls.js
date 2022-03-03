@@ -269,7 +269,7 @@ let VolumeControls = {
                                 )
                         ),
                     ctrl_volume_text: $('<input type="text" id="'+identifier+'__text" class="range-text" value="'+ conf.value +'">'),
-                    ctrl_volume: $('<input type="range" id="'+identifier+'__main" class="dev" min="'+ conf.min +'" max="'+ conf.max +'" value="'+ conf.value +'">'), 
+                    ctrl_volume: $('<input type="range" id="'+identifier+'__main" min="'+ conf.min +'" max="'+ conf.max +'" value="'+ conf.value +'">'), 
                 };
         }
     },
@@ -285,20 +285,16 @@ let VolumeControls = {
             VolumeControls.configure();
         if (VolumeControls.dev) console.log('* internal - BUILD from incoming parts: ', preparedParts);
 
-        //console.log(conf);
-        elCtrl.addClass('volume-'+ conf.type.toLowerCase());
+        elCtrl.addClass('oftype-'+ conf.type.toLowerCase());
 
         elCtrl.vc_setDataKey('min', conf.min, true)
               .vc_setDataKey('max', conf.max, true)
               .vc_setDataKey('value', conf.value, true);
 
         elCtrl.append(
-            /*$('<div class="volume-control  rotary-pot">')
-                .append(*/
             preparedParts.ctrl_volume_manipulator   ?? '[warn: no prepared parts.ctrl_volume_manipulator]',
             preparedParts.ctrl_volume_text          ?? '[warn: no prepared parts.ctrl_volume_text]',
             preparedParts.ctrl_volume               ?? '[warn: no prepared parts.ctrl_volume]',
-                // )
         );
 
 
@@ -474,7 +470,7 @@ let VolumeControls = {
                     break;
 			case 'VolumeRotaryPot':
 			default:
-                    item = $('<volume id="vc_rotarypot_test" class="volume-ctrl  is-loading" data-type="RotaryPot"></volume>');
+                    item = $('<volume style="--vc-size: 4;" id="vc_rotarypot_test" class="volume-ctrl  is-loading" data-type="RotaryPot"></volume>');
                     break;
 		}
 
