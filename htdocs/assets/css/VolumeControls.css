@@ -19,6 +19,12 @@ volume {
     --vc-scale-width: var( --vc-width-overall );
     --vc-scale-height: var( --vc-height-overall );
 
+    --vc-scale-markline-background: #222222dd;
+    --vc-scale-markline-width: 1px;
+    --vc-scale-markline-height: 10px;
+    --vc-scale-markline-indent: 2px;
+
+
 
     /* Knob */
     --vc-knob-width: 2em;
@@ -106,6 +112,24 @@ volume {
         
             background-color: #ffc720;
     }
+        volume.oftype-rotarypot scale scaledivider  {
+                /*background: #0000ff11;*/
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+            volume.oftype-rotarypot scale markline  {
+                background: var( --vc-scale-markline-background );
+                position: absolute;
+                width: var( --vc-scale-markline-width );
+                height: var( --vc-scale-markline-height );
+            }
+                volume.oftype-rotarypot scale markline.indent  {
+                    top: var( --vc-scale-markline-indent );
+                }
+    
     volume.oftype-rotarypot knob   {
         position: absolute;
         top: calc(var(--vc-size) *          var( --vc-knob-offset-y ));

@@ -759,7 +759,7 @@ console.log('TIME FINAL: ', time);
         if (Xplayer.crossfaderReady)    {
             // reinit crossfader with its current val - it will handle volumes on A and B
             //faderValue = $('#crossfader-ab').slider( 'option', 'values')
-            VolumeControls.crossfaderSetValue($('#crossfader-ab-value').val());
+            VolumeControls.setCrossfaderVolumeValue($('#crossfader-ab-value').val());
         }
 
 
@@ -1174,7 +1174,7 @@ XplayerNode.init();
 (() => {
     'use strict'
 
-$('.navbar').empty();
+//$('.navbar').empty();
 // return VolumeControls.runTester('VolumeRotaryPot');
 // return VolumeControls.runTester('Crossfader');
 

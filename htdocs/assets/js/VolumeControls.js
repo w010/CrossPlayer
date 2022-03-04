@@ -1,7 +1,7 @@
 /**
  * Volume Controls - fancy volume UI pots / manipulators / sliders
  * 
- * v0.2
+ * v0.3
  * 
  * wolo.pl '.' studio
  * 2022
@@ -94,6 +94,11 @@ let VolumeControls = {
     },
 
 
+
+    /** VOLUME CONTROLLER */
+    
+
+
 	/**
      * Run setup items, using defined selectors
      * @param selectors Object {
@@ -113,8 +118,19 @@ let VolumeControls = {
             VolumeControls.setupInstance_VolumeCtrl(el, conf);
         });
 
-        return DigitAll;
+        return VolumeControls;
     },
+
+
+
+
+
+
+    /**
+ 
+        ROTARY POT
+
+     */
 
 
 
@@ -143,14 +159,14 @@ let VolumeControls = {
             let __markupBuildFunc = typeof conf?.markupBuildFunc === 'function' ? conf.markupBuildFunc : VolumeControls.config.markupBuildFunc;
 
             // prepare markup parts
-            let preparedParts = __markupPrepareFunc(identifier, manipulatorType, conf);
+            let preparedParts = __markupPrepareFunc(el, identifier, manipulatorType, conf);
             // build markup using prepared parts
             __markupBuildFunc(el, preparedParts, conf);
         }
 
 
         VolumeControls.linkSubInputsValue(el);
-        VolumeControls.setManipulatorVolumeState(el, conf.value, true);
+        VolumeControls.setManipulatorStateRotaryPot(el, conf.value, true);
 
         el.removeClass('is-loading').addClass('is-set');
 	},
@@ -202,31 +218,6 @@ let VolumeControls = {
     },
 
 
-    /**
-     * Set DATA
-     * @param el jQuery|object
-     * @param key string
-     * @param val mixed
-     * @param alsoSetAttr bool
-     */
-    setDataKey: (el, key, val, alsoSetAttr) => {
-        el.data(key, val);
-        // is probably not needed for anything, but good to have this updated at least with main value to see what's going on
-        if (alsoSetAttr)   {
-            el.attr('data-'+key, val);
-        }
-    },
-
-    /**
-     * Get DATA
-     * @param el jQuery|object
-     * @param key string
-     * @return mixed
-     */
-    getDataKey: (el, key) => {
-        return el.data(key);
-    },
-
 
     /**
      * Make sure essential configuration keys are there
@@ -234,6 +225,7 @@ let VolumeControls = {
      * @return {{maxValue}|*}
      */
     setConfDefaultsIfNotSet: (conf) => {
+        // todo later: handle various types here! or maybe make separate default conf methods for each?
         if (typeof conf === 'undefined')
             conf = {};
         conf.value = conf?.value  ??  0;  
@@ -246,12 +238,13 @@ let VolumeControls = {
 
 
     /**
+     * @param elCtrl object|jQuery
      * @param identifier string Unique string, used to build id's and linking items
      * @param manipulatorType string ['RotaryPot'|?] Manipulator type
      * @param conf json
      * @return array parts used to assemble final markup. process before build, if needed
      */
-    prepareMarkupParts_VolumeCtrl: (identifier, manipulatorType, conf) => {
+    prepareMarkupParts_VolumeCtrl: (elCtrl, identifier, manipulatorType, conf) => {
         if (!VolumeControls.ready)
             VolumeControls.configure();
         if (VolumeControls.dev) console.log('* internal - PREPARE parts for identifier: ' + identifier + ' manipulator type: ' + manipulatorType);
@@ -262,7 +255,7 @@ let VolumeControls = {
                 return {
                     ctrl_volume_manipulator: $('<manipulator id="'+identifier+'__manipulator">')
                         .append(
-                                $('<scale> <line></line> <line></line> </scale>'),
+                                VolumeControls.buildScaleRotaryPot($('<scale>'), elCtrl, conf),
                                 $('<knob>').append(
                                     $('<rondo> <pointer>'),   // bottom part of knob, above scale
                                     $('<turn> <pointer>')
@@ -319,7 +312,7 @@ let VolumeControls = {
             let onMouseMove = (e) => {
                     //console.log(e);
                     e.preventDefault();
-                    VolumeControls._handleMove(elCtrl, startY, e.clientX, e.clientY,  onMouseMove);
+                    VolumeControls._handleMouseMove(elCtrl, startY, e.clientX, e.clientY, onMouseMove);
             };
 
             let onMouseUp = (e) => {
@@ -342,7 +335,7 @@ let VolumeControls = {
 
 
 
-    _handleMove: (elCtrl, startY, clientX, clientY,  onMouseMove) => {
+    _handleMouseMove: (elCtrl, startY, clientX, clientY,  onMouseMove) => {
         let deltaPx = startY - clientY;
         
         // without that check and unregistering listener also here, it sometimes doesn't trigger mouseup,
@@ -383,12 +376,13 @@ let VolumeControls = {
      *              - then set this to true, to not trigger sync event and stuck in endless loop, when handlers will try to update all the values again
      */
     setVolumeCtrlValue: (elCtrl, value, silent) => {
+        // todo later: handle various types here, not only rotary */
         value = Utility.forceNumberInScope(value, elCtrl.vc_getDataKey('min'), elCtrl.vc_getDataKey('max'));
         let inputsLinked = elCtrl.vc_getDataKey( 'inputsLinked');
         let elManipulator = inputsLinked?.manipulator;
 
         elCtrl.vc_setDataKey('value', value, true)
-        VolumeControls.setManipulatorVolumeState(elManipulator, value);
+        VolumeControls.setManipulatorStateRotaryPot(elManipulator, value);
         if (!silent)  {
             // trigger volume sync event
             elCtrl.trigger('set_volume_sync.vc.ctrl', {volumeValue: value});
@@ -398,13 +392,17 @@ let VolumeControls = {
 
 
     // todo: FINISH
-    setManipulatorVolumeState: (el, value) => {
-        
-        let valuePercent = value ;   // value // todo - check that
+    /**
+     * Visual State of the manipulator
+     * @param el
+     * @param valuePercent
+     */
+    setManipulatorStateRotaryPot: (el, valuePercent) => {
+
         if (valuePercent < 0)   {
             valuePercent = 0;
         }
-        
+
         // I assume here, that every volume slider input has values 0-100 and that we can
         // here basically expect the percentage value. if you need to use it with other scope,
         // pass them and calculate valuePercent here using them.
@@ -455,6 +453,79 @@ let VolumeControls = {
 
 
     /**
+     * Scale for controller - append lines at calculated positions
+     */
+    buildScaleRotaryPot: (elScale, elCtrl, localConf) => {
+        let conf = VolumeControls.config;
+        // todo later: first use data- attribs, before localConf values, for some/all options
+
+        let divideTo = conf?.divideTo ??                    10;   // 2 parts = 3 lines! 
+        let oversizeStep = conf?.oversizeStep ??            2;   // 5px each step 
+        let baseMarkHeight = conf?.baseMarkHeight ??        10;
+
+        let minRotationAngle = conf?.minRotationAngle ??    225;     // about 7:30
+        let maxRotationAngle = conf?.maxRotationAngle ??    135;     // about 4:30
+        let rotateOrientation = conf?.rotateOrientation ??  'R';     // clockwise: value +
+
+
+
+        let angleBetween;
+        let correctionDegrees;
+        if (rotateOrientation === 'R')   {
+            angleBetween = 360 - minRotationAngle + maxRotationAngle;
+            // if startingRotation is lower than 0 deg
+            correctionDegrees = 360 - minRotationAngle;
+        }
+        // calculate offset in deg
+        let stepInDegrees = angleBetween / divideTo;
+
+        
+        // if startingRotation is lower than 0
+
+        for (let m=0; m<=divideTo; m++) {
+
+            let offsetInDegrees = m * stepInDegrees;
+            let cssHeightOffset = 0;
+            let classAttr = '';
+
+            // first item customize
+            if (m === 0)   {
+            }
+            // last item customize
+            else if (m === divideTo)   {
+            }
+            // all other
+            else    {
+                cssHeightOffset = oversizeStep;
+                classAttr = 'indent';
+            }
+
+            // correction for rotation to the Min position, respecting rotation dir. todo later: orientation=L
+            if (rotateOrientation === 'R')   {
+                offsetInDegrees -= correctionDegrees;
+            }
+
+
+            elScale.append(
+                //$('<scaledivider style="transform: rotate('+offsetInDegrees+'deg);"><markline style="top: '+cssHeightOffset+'px;">')
+                $('<scaledivider style="transform: rotate('+offsetInDegrees+'deg);"><markline class="'+classAttr+'" style="">')
+            );
+        }
+
+        return elScale;
+    },
+
+
+
+
+    /**
+
+        CROSSFADER
+
+     */
+
+
+    /**
      * 
      * // todo: rework, like rotarypot, allow multiple instances
      */
@@ -479,7 +550,8 @@ let VolumeControls = {
             create: (e, ui) => {
                 // reset and append some additional markup
 
-                VolumeControls.crossfaderSetValue(Xplayer.config.crossfader_initial);
+// todo: check that! move to callback
+                VolumeControls.setCrossfaderVolumeValue(Xplayer.config.crossfader_initial);
                 $('#crossfader-ab .fader-handle').append(
                     $('<span class="inner">'),
                     $('<span class="cut">')
@@ -493,7 +565,7 @@ let VolumeControls = {
                 }
             },
             slide: (e, ui) => {
-                VolumeControls.crossfaderSetValue(ui.value);
+                VolumeControls.setCrossfaderVolumeValue(ui.value);
 
                 if (typeof callbackAfterSlide === 'function') {
                     callbackAfterSlide(e, ui); 
@@ -528,6 +600,7 @@ let VolumeControls = {
         let baseMarkHeight = 50;
 
 
+        // todo: pass/read that!
         let scale = $('.crossfader-wrap .scale');
         // calculate offset in % instead of px! it works best and everywhere
         let stepInPercent = 100 / divideTo;
@@ -560,7 +633,7 @@ let VolumeControls = {
 
 
 
-    crossfaderSetValue: (value) => {
+    setCrossfaderVolumeValue: (value) => {
 
         value = parseInt(value);
         // snap to center, in this scope
@@ -578,6 +651,36 @@ let VolumeControls = {
         VolumeControls.setVolumeCtrlValue($('volume#player_B'), Utility.forceNumberInScope(100 + value, 0, 100));
     },
 
+
+
+    /** MISC */
+
+
+
+    /**
+     * Set DATA
+     * @param el jQuery|object
+     * @param key string
+     * @param val mixed
+     * @param alsoSetAttr bool
+     */
+    setDataKey: (el, key, val, alsoSetAttr) => {
+        el.data(key, val);
+        // is probably not needed for anything, but good to have this updated at least with main value to see what's going on
+        if (alsoSetAttr)   {
+            el.attr('data-'+key, val);
+        }
+    },
+
+    /**
+     * Get DATA
+     * @param el jQuery|object
+     * @param key string
+     * @return mixed
+     */
+    getDataKey: (el, key) => {
+        return el.data(key);
+    },
 
 
 
@@ -612,9 +715,9 @@ let VolumeControls = {
         item.vc_makeRotaryPot({
             value: 16,
             max: 85,
-            markupPrepareFunc: (identifier, manipulatorType, conf) => {
+            markupPrepareFunc: (el, identifier, manipulatorType, conf) => {
                 // console.log('CUSTOM markupPrepareFunc. item ident: ' + identifier);
-                return VolumeControls.prepareMarkupParts_VolumeCtrl(identifier, manipulatorType, conf);
+                return VolumeControls.prepareMarkupParts_VolumeCtrl(el, identifier, manipulatorType, conf);
             },
             markupBuildFunc: (el, preparedParts, conf) => {
                 // console.log('CUSTOM markupBuildFunc');
