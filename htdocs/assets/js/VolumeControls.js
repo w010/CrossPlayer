@@ -454,6 +454,130 @@ let VolumeControls = {
     },
 
 
+    /**
+     * 
+     * // todo: rework, like rotarypot, allow multiple instances
+     */
+    initCrossfader: (conf, callbackAfterCreate, callbackAfterSlide, callbackAfterChange) => {
+        $('#crossfader-ab').slider({
+            range:      conf?.range ??  'min',
+            min:        conf?.min ??    -100,
+            max:        conf?.max ??    100,
+            value:      conf?.value ??  0,
+            animate:    conf?.animate ?? 'fast',
+            classes:    conf?.classes ?? {
+                'ui-slider': 'volume-ctrl  oftype-crossfader',
+                'ui-slider-handle': 'fader-handle',
+                'ui-slider-range': 'fader-range',
+            },
+            // start: () => {   // stop: () => {
+            change: (e, ui) => {
+                if (typeof callbackAfterChange === 'function') {
+                    callbackAfterChange(e, ui); 
+                }
+            },
+            create: (e, ui) => {
+                // reset and append some additional markup
+
+                VolumeControls.crossfaderSetValue(Xplayer.config.crossfader_initial);
+                $('#crossfader-ab .fader-handle').append(
+                    $('<span class="inner">'),
+                    $('<span class="cut">')
+                );
+
+                // build scale
+                VolumeControls.buildScaleCrossfader();
+
+                if (typeof callbackAfterCreate === 'function') {
+                    callbackAfterCreate(e, ui); 
+                }
+            },
+            slide: (e, ui) => {
+                VolumeControls.crossfaderSetValue(ui.value);
+
+                if (typeof callbackAfterSlide === 'function') {
+                    callbackAfterSlide(e, ui); 
+                }
+            },
+        });
+        
+        // text input
+        $('input#crossfader-ab-value').change(e => {
+            // v1  // value = $(e.target).map(() => { return $(this).val(); })[0];
+            // v2
+            let value = $(e.target).prop('value');
+            // v3 - doesn't work!  // value = $(e.target[0]).val());
+            // v4  // value = $(e.target)[0].value;
+
+            $('#crossfader-ab').slider( 'option', 'value', value);
+        });
+    },
+
+
+    buildScaleCrossfader: () => {
+
+        // scale STYLE A
+        // let divideTo = 32;
+        // let oversizeEvery_4 = 1.6;
+        // let oversizeEvery_2 = 1.2;
+        // let baseMarkHeight = 30;
+
+        // scale STYLE B
+        let divideTo = 16;
+        let oversizeStep = 5;   // 5px each step 
+        let baseMarkHeight = 50;
+
+
+        let scale = $('.crossfader-wrap .scale');
+        // calculate offset in % instead of px! it works best and everywhere
+        let stepInPercent = 100 / divideTo;
+
+        for (let m=0; m<=divideTo; m++) {
+            let offsetInPercent = m * stepInPercent;
+            let cssHeight = baseMarkHeight;
+
+            // STYLE B
+            if (offsetInPercent < 50)   {
+                cssHeight = baseMarkHeight - (m * oversizeStep); 
+            }
+            else if (offsetInPercent > 50)   {
+                cssHeight = baseMarkHeight - ((divideTo - m)  * oversizeStep); 
+            }
+
+                // STYLE A
+                /*if (!(m%2))   {
+                    cssHeight = 'height: '+ (oversizeEvery_2 * baseMarkHeight) + 'px';
+                }
+                if (!(m%4))   {
+                    cssHeight = 'height: '+ (oversizeEvery_4 * baseMarkHeight) + 'px';
+                }*/
+
+            $(scale).append(
+                $('<div class="markline" style="left: '+offsetInPercent+'%; height: '+cssHeight+'px;">')
+            );
+        }
+    },
+
+
+
+    crossfaderSetValue: (value) => {
+
+        value = parseInt(value);
+        // snap to center, in this scope
+        if (value > -3  &&  value < 3)    {
+            value = 0;
+        }
+        $('#crossfader-ab-value').val(value);
+        $('#crossfader-ab').slider( 'option', 'value', value);
+
+        // apply changes to tracks volume balance
+// todo: try to use references! pass or smth
+// todo: change characteristics / how it calculates A B volumes
+// todo later: register the two elements to fade between. now just assume they name #player_N
+        VolumeControls.setVolumeCtrlValue($('volume#player_A'), Utility.forceNumberInScope(100 - value, 0, 100));
+        VolumeControls.setVolumeCtrlValue($('volume#player_B'), Utility.forceNumberInScope(100 + value, 0, 100));
+    },
+
 
 
 

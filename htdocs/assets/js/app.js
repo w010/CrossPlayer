@@ -192,9 +192,15 @@ let Xplayer = {
                 Xplayer.instances.backtrack.player[0].currentTime = cTime;
             }
         });
-        
-        
-        Xplayer.initCrossfader();
+
+
+        VolumeControls.initCrossfader({
+                value: Xplayer.config.crossfader_initial,
+            },
+            (e, ui) => {
+                Xplayer.crossfaderReady = true;
+            },
+        );
 
 
         $('.appversion').on('dblclick', () => {
@@ -347,112 +353,7 @@ console.log('TIME FINAL: ', time);
     },
 
 
-    // todo: move to VolumeControls
-    initCrossfader: () => {
-        $('#crossfader-ab').slider({
-            range: 'min',
-            min: -100,
-            max: 100,
-            value: Xplayer.config.crossfader_initial,
-            animate: 'fast',
-            classes: {
-                'ui-slider': 'crossfader',
-                'ui-slider-handle': 'fader-handle',
-                'ui-slider-range': 'fader-range',
-            },
-            // change: () => {   // start: () => {   // stop: () => {
-            create: () => {
-                // reset and append some additional markup
-                Xplayer.crossfaderReady = true;
-                Xplayer.crossfaderSetValue(Xplayer.config.crossfader_initial);
-                $('#crossfader-ab .fader-handle').append(
-                    $('<span class="inner">'),
-                    $('<span class="cut">')
-                );
-                
-                // build scale
-                (() => {
-                    // scale STYLE A
-                    // let divideTo = 32;
-                    // let oversizeEvery_4 = 1.6;
-                    // let oversizeEvery_2 = 1.2;
-                    // let baseMarkHeight = 30;
-                    
-                    // scale STYLE B
-                    let divideTo = 16;
-                    let oversizeStep = 5;   // 5px each step 
-                    let baseMarkHeight = 50;
-                    
-                    
-                    let scale = $('.crossfader-wrap .scale');
-                    // calculate offset in % instead of px! it works best and everywhere
-                    let stepInPercent = 100 / divideTo;
-
-                    for (let m=0; m<=divideTo; m++) {
-                        let offsetInPercent = m * stepInPercent;
-                        let cssHeight = baseMarkHeight;
-
-                        // STYLE B
-                        if (offsetInPercent < 50)   {
-                            cssHeight = baseMarkHeight - (m * oversizeStep); 
-                        }
-                        else if (offsetInPercent > 50)   {
-                            cssHeight = baseMarkHeight - ((divideTo - m)  * oversizeStep); 
-                        }
-                        
-                            // STYLE A
-                            /*if (!(m%2))   {
-                                cssHeight = 'height: '+ (oversizeEvery_2 * baseMarkHeight) + 'px';
-                            }
-                            if (!(m%4))   {
-                                cssHeight = 'height: '+ (oversizeEvery_4 * baseMarkHeight) + 'px';
-                            }*/
-
-                        $(scale).append(
-                            $('<div class="markline" style="left: '+offsetInPercent+'%; height: '+cssHeight+'px;">')
-                        );
-                    }
-                })();
-                
-            },
-            slide: (e, ui) => {
-                Xplayer.crossfaderSetValue(ui.value);
-            },
-        });
-        
-        // text input
-        $('input#crossfader-ab-value').change(e => {
-            // v1  // value = $(e.target).map(() => { return $(this).val(); })[0];
-            // v2
-            let value = $(e.target).prop('value');
-            // v3 - doesn't work!  // value = $(e.target[0]).val());
-            // v4  // value = $(e.target)[0].value;
-
-            $('#crossfader-ab').slider( 'option', 'value', value);
-        });
-    },
-
-
-    crossfaderSetValue: (value) => {
-
-        value = parseInt(value);
-        if (value > -4  &&  value < 4)    {
-            value = 0;
-        }
-        $('#crossfader-ab-value').val(value);
-        $('#crossfader-ab').slider( 'option', 'value', value);
-
-        // apply changes to tracks volume balance
-        $('#volume_pot_A')
-            .val( Utility.forceNumberInScope(100 - value, 0, 100) )
-            .trigger('change');
-// todo: change characteristics / how it calculates A B volumes
-// todo: change these to VolumeControls call, write method to set this value and take care of scope, events etc.
-        $('#volume_pot_B')
-            .val( Utility.forceNumberInScope(100 + value, 0, 100) )
-            .trigger('change');
-    },
-
+    
 
 
     initFancyVolumes: () => {
@@ -858,7 +759,7 @@ console.log('TIME FINAL: ', time);
         if (Xplayer.crossfaderReady)    {
             // reinit crossfader with its current val - it will handle volumes on A and B
             //faderValue = $('#crossfader-ab').slider( 'option', 'values')
-            Xplayer.crossfaderSetValue($('#crossfader-ab-value').val());
+            VolumeControls.crossfaderSetValue($('#crossfader-ab-value').val());
         }
 
 
@@ -1273,7 +1174,7 @@ XplayerNode.init();
 (() => {
     'use strict'
 
-//$('.navbar').empty();
+$('.navbar').empty();
 // return VolumeControls.runTester('VolumeRotaryPot');
 // return VolumeControls.runTester('Crossfader');
 

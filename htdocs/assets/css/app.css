@@ -501,124 +501,6 @@ audio::-webkit-media-controls-panel {
 
 
 
-input.slider-value   {
-    font-size: 1em;
-    text-align: center;
-    min-width: 2em;
-    width: auto;
-    color: #808080;
-    background-color: transparent;
-    border-color: transparent;
-}
-
-input.slider-value:focus   {
-    box-shadow: 0 0 0 0.25rem rgba(0, 58, 145, 0.25);
-    background-color: #262b31 !important;
-    border-color: transparent !important;
-    outline: none;
-    color: #d3d3d3;
-}
-
-    .crossfader-wrap    {
-        box-shadow: 1px 2px 1px 0px #080808a6;
-        margin: 50px auto 40px;
-        border: 1px solid #4f4f4f;
-        border-radius: 3px;
-        position: relative;
-        top: 3.5em;
-    }
-
-.crossfader {
-    border: 3px solid #181818;
-    background-color: #cd5c5c7a;    /* color of the RIGHT side of the bar */
-    box-shadow: inset 4px -5px 5px 0px #080808a6;
-    border-radius: 3px;
-    transition: filter .3s;
-    cursor: e-resize;
-}
-    
-    .crossfader:hover  {
-        filter: brightness(105%);
-    }
-
-/* this element is paralell to .crossfader-wrap */
-#crossfader .input-group {
-    top: 2em;
-}
-
-.crossfader .fader-range   {
-    background-color: #163e79ed;      /* color of the LEFT side of the bar */
-    box-shadow: inset 4px -5px 5px 0px #080808a6;
-}
-
-.crossfader .fader-handle   {
-    font-weight: normal;
-    outline: none;
-    top: -1em;
-    height: 2.4em;
-    width: 1.1em;
-    border: 3px solid #212121;
-    border-radius: 2px;
-    color: #555;
-    box-shadow: 3px 2px 6px 0px #080808a6;
-    background-image: linear-gradient(153deg, #855b5b, #18180c);
-    transition: filter .3s;
-    cursor: grab;
-}
-    .crossfader .fader-handle .inner {
-        position: absolute;
-        top: 2px; left: 2px;
-        width: calc(100% - 4px); height: calc(100% - 4px);
-        border: 3px solid #554949;
-        border-radius: 2px;
-        box-shadow: inset 3px 3px 5px 0px #080808a6;
-        background-image: linear-gradient(275deg, #525252, #3f3e3e);
-        border-right-color: #353535;
-        border-bottom-color: #3b3333;
-    }
-
-    .crossfader .fader-handle .cut    {
-        height: 5px;
-        border: 1px solid #0c0c0ccc;
-        top: 0;
-        width: 2px;
-        left: calc(50% - 1px);
-        position: absolute;
-        box-shadow: 1px 2px 3px 2px #2727279e;
-    }
-
-.crossfader .fader-handle:active {
-    cursor: grabbing;
-}
-
-.crossfader .fader-handle:hover {
-    /*filter: saturate(160%);*/
-    filter: brightness(105%);
-}
-
-.crossfader-wrap .scale {
-    height: 3em;
-    width: 100%;
-    position: absolute;
-    top: -3.6em;    /* offset whole wrap by this value */
-}
-
-.crossfader-wrap .scale .markline {
-    position: absolute;
-    bottom: 0;
-    width: 1px;
-    /*background-color: #333;*/
-    background-color: #666;
-    height: 30px;
-}
-
-
-
-
-
-
-
-
 .play-item  {
     margin-bottom: 20px;
     background-color: #595959;
@@ -788,6 +670,11 @@ volume.oftype-rotarypot {
     volume.oftype-rotarypot#vc_rotarypot_test {
         width: 30em;
     }
+
+
+
+/* CUSTOMIZE CROSSFADER */
+
 
 
 
