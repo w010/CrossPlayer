@@ -3,7 +3,7 @@
  * Can handle many parallel consoles in the same time, ie. to separate your topics and switch to new empty one.
  * (like in ConEmu)
  * 
- * v0.1
+ * v0.2
  * 
  * wolo.pl '.' studio
  * 2022

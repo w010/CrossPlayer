@@ -10,7 +10,7 @@
     height: 11em;
     position: relative;
     transition: opacity .3s;
-    margin: 0.5em auto 0;
+    margin: .5em auto 0;
 }
 
 .reel w_roll,
@@ -29,7 +29,7 @@
     .reel w_roll_shadow    {
         z-index: -1;
         border-radius: 50%;
-        box-shadow: #080704 4px 3px 7px 2px;
+        box-shadow: .25rem  .19rem  .44rem  .125rem  #080704;
         background: none;
 
             transition: all .9s;
@@ -37,17 +37,20 @@
     .reel w_roll_blink    {
         z-index: 1;
         border-radius: 50%;
-        /*width: 201px;*/
         width: 9em;
-        /*height: 201px;*/
         height: 9em;
-        background: linear-gradient(311deg, rgba(131,58,180,0) 0%, rgba(23,209,29,.4) 35%, rgba(253,29,29,.4) 45%, rgba(203,29,209,.5) 55%, rgba(252,176,69,0) 100%);
+        background: linear-gradient(311deg, 
+            rgba(131,58,180,0) 0%,
+            rgba(23,209,29,.4) 35%,
+            rgba(253,29,29,.4) 45%,
+            rgba(203,29,209,.5) 55%,
+            rgba(252,176,69,0) 100%);
         opacity: .3;
 
             transition: all .9s;
     }
         .reel w_roll_blink.right    {
-            right: -3px;
+            right: -.19rem;
         }
 
 .reel w_roll    {
@@ -80,24 +83,24 @@
 
 .reel .power    {
     position: absolute;
-    bottom: 16px;
-    width: 16px;
-    height: 16px;
+    bottom: 1rem;
+    width: 1rem;
+    height: 1rem;
     background: #218557;
     background: linear-gradient(134deg, rgb(13 81 41 / 79%), #1d6f49c2);
-    border: 1px solid #88a180;
+    border: .06rem solid #88a180;
     border-radius: 50%;
     transition: box-shadow .1s, background-color .1s;
-    box-shadow: #060606ad 3px 1px 5px 0px;
+    box-shadow: .19rem  .06rem  .31rem  0  #060606ad;
 }
     .reel.spin-playing .power    {
         background: #20c997;
-        box-shadow: #2d9330b3 1px 0px 13px 4px;
+        box-shadow: #2d9330b3 .06rem  0 .81rem  .25rem;
         border-color: #83e960;
     }
     .reel.spin-paused .power    {
         background: #c97a20;
-        box-shadow: rgba(147, 106, 45, 0.7) 1px 0px 13px 4px;
+        box-shadow: .06rem  0  .81rem  .25rem  rgba(147, 106, 45, .7);
         border-color: #e9a960;
     }
 
@@ -112,12 +115,12 @@
 }
 
 .reel .readheader .tape    {
-    border: 1px solid #41300d;
-    border-width: 1px 0;
+    border: 0 solid #41300d;
+    border-width: .063rem 0;
     background: #2f2510;
-    box-shadow: #060606a1 2px 1px 0px 1px;
+    box-shadow: #060606a1  .125rem  .125rem  0  .125rem;
     width: 5em;
-    height: 0.1em;
+    height: .1em;
     position: absolute;
     z-index: -5;
     bottom: 0;
@@ -140,11 +143,11 @@
     
 }
 .reel .readheader .thehead    {
-    border: 1px solid #41260f;
+    border: .06rem solid #41260f;
     background: #623b11;
-    box-shadow: inset rgb(147 106 45 / 70%) 3px 5px 5px 0px;
-    border-radius: 30% 30% 5% 5%;
-    bottom: 0.1em;
+    box-shadow: inset rgb(147 106 45 / 70%)  .19rem  .31rem  .31rem  0;
+    border-radius: 30% 30%  5% 5%;
+    bottom: .1em;
     position: absolute;
     z-index: -10;
     width: 80%;

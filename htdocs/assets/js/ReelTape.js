@@ -1,7 +1,7 @@
 /**
  * Reel Tape - animated simulation of oldschool tape player 
  * 
- * v0.2
+ * v0.3
  * 
  * wolo.pl '.' studio
  * 2022

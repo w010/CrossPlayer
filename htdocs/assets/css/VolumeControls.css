@@ -20,9 +20,10 @@
     --vc-scale-height: var( --vc-height-overall );
 
     --vc-scale-markline-background: #222222dd;
-    --vc-scale-markline-width: 1px;
-    --vc-scale-markline-height: 10px;
-    --vc-scale-markline-indent: 2px;
+    --vc-scale-markline-border-radius: .08em;
+    --vc-scale-markline-width: .08em;
+    --vc-scale-markline-height: 1em;
+    --vc-scale-markline-indent: .3em;
 
 
 
@@ -31,12 +32,13 @@
     --vc-knob-height: 2em;
     /* this calc doesn't do what's supposed, so put them by hand */
     /*--vc-knob-offset-x: calc((var(--vc-width-overall) - var(--vc-width-knob)) * 50%);*/
-    --vc-knob-offset-x: 0.2em;
-    --vc-knob-offset-y: 0.2em;
+    --vc-knob-offset-x: .2em;
+    --vc-knob-offset-y: .2em;
     --vc-knob-border: none;
     --vc-knob-border-radius: 49%;   /* draw it slightly misshapen, to add some naturals */
     --vc-knob-background: transparent;
-    --vc-knob-box-shadow: 3px 2px 6px 0px #080808a6;
+    --vc-knob-box-shadow: .16em .1em .31em 0  #080808a6;
+    /*--vc-knob-box-shadow: .16em .1em .31em 0 #080808a6;*/
 
 
     /* Rondo: 100% of knob */
@@ -51,36 +53,41 @@
     /* Turn part of the knob (the holder, or how to call that thing.) */
     --vc-turn-width: 1.2em;
     --vc-turn-height: 1.2em;
-    --vc-turn-offset-x: 0.4em;  /* offset by: half of (difference between Knob and Knob-Turn) */
-    --vc-turn-offset-y: 0.4em;
-    --vc-turn-border: 1px solid rgba(110, 54, 54, 0.66);    /* 1px solid #1b0f0fa8; */
+    --vc-turn-offset-x: .4em;  /* offset by: half of (difference between Knob and Knob-Turn) */
+    --vc-turn-offset-y: .4em;
+    --vc-turn-border: .05em solid rgba(110, 54, 54, .66);    /* .053em solid #1b0f0fa8; */
     --vc-turn-border-radius: 35%;
     --vc-turn-background: linear-gradient(155deg, #1b0f0f 25%, #5f2f2f 75%);
-    --vc-turn-box-shadow: 3px 2px 6px 0px #080808a6;
+    --vc-turn-box-shadow: .16em .1em .31em 0  #080808a6;
 
 
     /* Pointer line (one on the KNOB) */
-    --vc-pointer_turn-offset-y: -1px;
+    --vc-pointer_turn-offset-y: -.01em;
     --vc-pointer_turn-offset-x: 0;
-    --vc-pointer_turn-width: 0.05em;
-    --vc-pointer_turn-height: 0.5em;
-    --vc-pointer_turn-border: 1px solid #bd7f12bf;
-    --vc-pointer_turn-border-radius: 3px;
-    --vc-pointer_turn-box-shadow: 3px 2px 6px 0px #080808a6;
+    --vc-pointer_turn-width: .05em;
+    --vc-pointer_turn-height: .5em;
+    --vc-pointer_turn-border: .05em solid #bd7f12bf;
+    --vc-pointer_turn-border-radius: .16em;
+    --vc-pointer_turn-box-shadow: .16em .1em .31em 0  #080808a6;
+    --vc-pointer_turn-background: rgba(243, 176, 52, .5);
 
 
-    /* todo: Pointer line (one on the RONDO) */
-    --vc-pointer_rondo-offset-y: -1px;
+    /* Pointer line (one on the RONDO) */
+    --vc-pointer_rondo-offset-y: .05em;
     --vc-pointer_rondo-offset-x: 0;
-    --vc-pointer_rondo-width: 0.05em;
-    --vc-pointer_rondo-height: 0.5em;
+    --vc-pointer_rondo-width: .05em;
+    --vc-pointer_rondo-height: .25em;
+    --vc-pointer_rondo-border: .05em solid #666666aa;
+    --vc-pointer_rondo-border-radius: .1em;
+    --vc-pointer_rondo-box-shadow: .053em .053em .053em 0  #08080855;
+    --vc-pointer_rondo-background: rgba(176, 176, 176, .3);
 
 
     /* text input */
     --vc-input-text-width: 2.6em;
-    --vc-input-text-font-size: 0.8em;
-    --vc-input-text-margin: 0.2em auto 0;
-    --vc-input-text-border: 1px solid #77777744;
+    --vc-input-text-font-size: .8em;
+    --vc-input-text-margin: .2em auto 0;
+    --vc-input-text-border: .053em solid #77777744;
 
 
 
@@ -133,11 +140,16 @@ volume {
             width: 100%;
             height: 100%;
         }
-            volume.oftype-rotarypot scale markline  {
+            volume.oftype-rotarypot scale scaledivider markline  {
                 background: var( --vc-scale-markline-background );
+                    /*background-color: #ffc720;*/
                 position: absolute;
+                left: 0; right: 0;
+                margin: 0 auto;
+                top: 0;
                 width: var( --vc-scale-markline-width );
                 height: var( --vc-scale-markline-height );
+                border-radius: var( --vc-scale-markline-border-radius );
             }
                 volume.oftype-rotarypot scale markline.indent  {
                     top: var( --vc-scale-markline-indent );
@@ -184,24 +196,43 @@ volume {
             background: var( --vc-turn-background );
             box-shadow: var( --vc-turn-box-shadow );
         }
-        /* pointer can be on turn and on rondo - they are separated things */
-        volume.oftype-rotarypot knob pointer  {
-            
-        }
-        volume.oftype-rotarypot knob turn pointer {
-            display: block;
-            position: relative;
-            margin: 0 auto;
+            /* pointer can be on turn and on rondo - they are separated things */
+            volume.oftype-rotarypot knob pointer  {
+            }
 
-            top: calc(var(--vc-size) *      var( --vc-pointer_turn-offset-y ));
-            left: calc(var(--vc-size) *     var( --vc-pointer_turn-offset-x ));
-            width: calc(var(--vc-size) *    var( --vc-pointer_turn-width ));
-            height: calc(var(--vc-size) *   var( --vc-pointer_turn-height ));
+            /* TURN POINTER */
+            volume.oftype-rotarypot knob turn pointer {
+                display: block;
+                position: relative;
+                margin: 0 auto;
 
-            border: var( --vc-pointer_turn-border );
-            border-radius: var( --vc-pointer_turn-border-radius );
-            box-shadow: var( --vc-pointer_turn-box-shadow );
-        }
+                top: calc(var(--vc-size) *      var( --vc-pointer_turn-offset-y ));
+                left: calc(var(--vc-size) *     var( --vc-pointer_turn-offset-x ));
+                width: calc(var(--vc-size) *    var( --vc-pointer_turn-width ));
+                height: calc(var(--vc-size) *   var( --vc-pointer_turn-height ));
+
+                border: var( --vc-pointer_turn-border );
+                border-radius: var( --vc-pointer_turn-border-radius );
+                background: var( --vc-pointer_turn-background );
+                box-shadow: var( --vc-pointer_turn-box-shadow );
+            }
+
+            /* RONDO POINTER */
+            volume.oftype-rotarypot knob rondo pointer {
+                display: block;
+                position: relative;
+                margin: 0 auto;
+
+                top: calc(var(--vc-size) *      var( --vc-pointer_rondo-offset-y ));
+                left: calc(var(--vc-size) *     var( --vc-pointer_rondo-offset-x ));
+                width: calc(var(--vc-size) *    var( --vc-pointer_rondo-width ));
+                height: calc(var(--vc-size) *   var( --vc-pointer_rondo-height ));
+
+                border: var( --vc-pointer_rondo-border );
+                border-radius: var( --vc-pointer_rondo-border-radius );
+                background: var( --vc-pointer_rondo-background );
+                box-shadow: var( --vc-pointer_rondo-box-shadow );
+            }
 
 
 /* accompany linked fields */
@@ -261,7 +292,7 @@ volume input[type="text"]   {
 }
 
 .oftype-crossfader-related input.slider-value:focus   {
-    box-shadow: 0 0 0 0.25rem rgba(0, 58, 145, 0.25);
+    box-shadow: 0 0 0 .25rem  rgba(0, 58, 145, .25);
     background-color: #262b31 !important;
     border-color: transparent !important;
     outline: none;
@@ -269,19 +300,19 @@ volume input[type="text"]   {
 }
 
     .crossfader-wrap    {
-        box-shadow: 1px 2px 1px 0px #080808a6;
-        margin: 50px auto 40px;
-        border: 1px solid #4f4f4f;
-        border-radius: 3px;
+        box-shadow: .053em .1em .053em 0  #080808a6;
+        margin: 2.6em auto 2em;
+        border: .053em solid #4f4f4f;
+        border-radius: .16em;
         position: relative;
         top: 3.5em;
     }
 
 .oftype-crossfader {
-    border: 3px solid #181818;
+    border: .16em solid #181818;
     background-color: #cd5c5c7a;    /* color of the RIGHT side of the bar */
-    box-shadow: inset 4px -5px 5px 0px #080808a6;
-    border-radius: 3px;
+    box-shadow: .2em  -.26em  .26em  0  #080808a6 inset;
+    border-radius: .16em;
     transition: filter .3s;
     cursor: e-resize;
 }
@@ -297,7 +328,7 @@ volume input[type="text"]   {
 
 .oftype-crossfader .fader-range   {
     background-color: #163e79ed;      /* color of the LEFT side of the bar */
-    box-shadow: inset 4px -5px 5px 0px #080808a6;
+    box-shadow: .2em  -.26em  .26em  0  #080808a6 inset;
 }
 
 .oftype-crossfader .fader-handle   {
@@ -306,34 +337,34 @@ volume input[type="text"]   {
     top: -1em;
     height: 2.4em;
     width: 1.1em;
-    border: 3px solid #212121;
-    border-radius: 2px;
+    border: .16em solid #212121;
+    border-radius: .1em;
     color: #555;
-    box-shadow: 3px 2px 6px 0px #080808a6;
+    box-shadow: .16em .1em .31em 0  #080808a6;
     background-image: linear-gradient(153deg, #855b5b, #18180c);
     transition: filter .3s;
     cursor: grab;
 }
     .oftype-crossfader .fader-handle .inner {
         position: absolute;
-        top: 2px; left: 2px;
-        width: calc(100% - 4px); height: calc(100% - 4px);
-        border: 3px solid #554949;
-        border-radius: 2px;
-        box-shadow: inset 3px 3px 5px 0px #080808a6;
+        top: .1em; left: .1em;
+        width: calc(100% - .2em); height: calc(100% - .2em);
+        border: .16em solid #554949;
+        border-radius: .1em;
+        box-shadow: .16em .16em .26em 0  #080808a6 inset;
         background-image: linear-gradient(275deg, #525252, #3f3e3e);
         border-right-color: #353535;
         border-bottom-color: #3b3333;
     }
 
     .oftype-crossfader .fader-handle .cut    {
-        height: 5px;
-        border: 1px solid #0c0c0ccc;
+        height: .26em;
+        border: .053em solid #0c0c0ccc;
         top: 0;
-        width: 2px;
-        left: calc(50% - 1px);
+        width: .1em;
+        left: calc(50% - .053em);
         position: absolute;
-        box-shadow: 1px 2px 3px 2px #2727279e;
+        box-shadow: .053em .1em .16em .1em  #2727279e;
     }
 
 .oftype-crossfader .fader-handle:active {
@@ -355,10 +386,10 @@ volume input[type="text"]   {
 .crossfader-wrap .scale .markline {
     position: absolute;
     bottom: 0;
-    width: 1px;
+    width: .053em;
     /*background-color: #333;*/
     background-color: #666;
-    height: 30px;
+    height: 1.5em;
 }
 
 

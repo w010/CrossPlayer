@@ -765,10 +765,11 @@ console.log('TIME FINAL: ', time);
         );
 
 
-        
+
         // embed
 
         container.append(instance_box);
+        $('#dropzone-'+load_as).addClass('slot-connected');
 
 
 

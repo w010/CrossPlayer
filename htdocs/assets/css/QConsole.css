@@ -1,12 +1,12 @@
 
 :root {
-    --qc-font-size: 0.9em;
-    --qc-font-family: SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;
+    --qc-font-size: .9em;
+    --qc-font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
     --qc-background: #222129;
     --qc-color: #ccc;
     --qc-log-color: #ccc;
     --qc-size: 30;
-    --qc-offset: 44px;  /* prompt bar height */
+    --qc-offset: 2.75rem;  /* prompt bar height */
 }
 
 
@@ -29,7 +29,7 @@
     .q-console.expanded {
         max-height: calc(var(--qc-size) * 1vh);
         min-height: calc(var(--qc-size) * 1vh);
-        box-shadow: #02020291 9px 11px 9px 4px;
+        box-shadow: .56rem .69rem .56rem .25rem  #02020291;
         top: 0;
     }
 
@@ -52,9 +52,8 @@
 
     .q-console .log-container .item    {
         display: block;
-        border-top: 1px solid ;
-        margin: 2px 20px;
-        border-top: 1px solid var(--qc-log-color);
+        margin: .125rem  1.25rem;
+        border-top: .063rem solid var(--qc-log-color);
         color: var(--qc-log-color);
     }
     .q-console .log-container .item.level-log    {
@@ -76,13 +75,13 @@
 
 .q-console .prompt    {
     /*border: 1px solid red;*/
-    border-top: 1px solid #6850b0;
+    border-top: .063rem solid #6850b0;
     background: var(--qc-background);
     position: absolute;
-    bottom: 0px;
-    height: 24px;
+    bottom: 0;
+    height: 1.5rem;
     width: 100%;
-    box-shadow: var(--qc-background) 0 -10px 20px 4px;
+    box-shadow: var(--qc-background) 0  -.625rem  1.25rem  .25rem;
 }
 
     .q-console .command-line    {
@@ -97,15 +96,15 @@
         
         vertical-align: top;
         display: inline-block;
-        width: calc(100% - 24px - 40px);
-        height: 24px;
+        width: calc(100% - 1.5rem - 2.5rem); 
+        height: 1.5rem;
     }
 
     .q-console .symbol::before {
         content: "$";
         /*border: 1px solid #0048ff;*/
-        width: 24px;
-        height: 24px;
+        width: 1.5rem;
+        height: 1.5rem;
         display: block;
         text-align: center;
 }

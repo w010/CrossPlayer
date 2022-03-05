@@ -1,7 +1,7 @@
 /**
  * Volume Controls - fancy volume UI pots / manipulators / sliders
  * 
- * v0.3
+ * v0.4
  * 
  * wolo.pl '.' studio
  * 2022
@@ -459,7 +459,7 @@ let VolumeControls = {
         let conf = VolumeControls.config;
         // todo later: first use data- attribs, before localConf values, for some/all options
 
-        let divideTo = conf?.divideTo ??                    10;   // 2 parts = 3 lines! 
+        let divideTo = conf?.divideTo ??                    8;   // 2 parts = 3 lines! 
         let oversizeStep = conf?.oversizeStep ??            2;   // 5px each step 
         let baseMarkHeight = conf?.baseMarkHeight ??        10;
 
@@ -700,8 +700,10 @@ let VolumeControls = {
                     item = $('<volume style="--vc-size: 4;" id="vc_rotarypot_test" class="volume-ctrl  is-loading" data-type="RotaryPot"></volume>');
                     break;
 		}
+        let volume = 50;
 
         $(VolumeControls.config.testerRunInSelector)
+            .attr('style', '--vc-volume-factor: '+volume+';')
             //.addClass('high-contrast')
             .empty().append(
                 $('<h3>VolumeControls - fancy volume test playground</h3>'),
@@ -714,7 +716,7 @@ let VolumeControls = {
         //  (alternatively - .vc_makeVolumeCtrl({}, 'RotaryPot'); )   
         item.vc_makeRotaryPot({
             value: 16,
-            max: 85,
+            //max: 85,
             markupPrepareFunc: (el, identifier, manipulatorType, conf) => {
                 // console.log('CUSTOM markupPrepareFunc. item ident: ' + identifier);
                 return VolumeControls.prepareMarkupParts_VolumeCtrl(el, identifier, manipulatorType, conf);

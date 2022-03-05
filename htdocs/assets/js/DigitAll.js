@@ -1,7 +1,7 @@
 /**
  * DigitAll - Digit Symbol Analog LCD Display
  * 
- * v0.3
+ * v0.4
  * 
  * wolo.pl '.' studio
  * 2022
