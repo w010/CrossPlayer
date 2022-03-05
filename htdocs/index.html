@@ -50,13 +50,17 @@
 
 				<div class="appname-container clearfix">
 					<div class="appname-wrap">
-						<p class="small  text-white-25  appversion">v0.1.5</p>
+						<p class="small  text-white-25  appversion">
+
+							v0.1.6
+
+						</p>
 						<h2 class="appname">CrossPlayer</h2>
 					</div>
 				</div>
 
 			</div>
-			
+
 
 			<div class="w-100  mb-3  d-block d-lg-none d-none"><!-- break columns row on sm --></div>
 
@@ -65,7 +69,7 @@
 				<h3 id="collection_title"></h3>
 			</div>
 
-			
+
 
 
 
@@ -80,14 +84,15 @@
 		</div>
     </header>
 
-	
+
     <div class="container-fluid">
         <div class="row">
             <nav class="col-md-2  col-xl-2  col-xxl-1  d-md-block  sidebar collapse" id="sidebarMenu">
                 <div class="position-sticky pt-3">
                     <ul class="nav flex-column">
 						<li class="nav-item">
-							<h5 class="nav-head alt">Collections:</h5>
+							<!--<h5 class="nav-head alt">Collections:</h5>-->
+							<h5 class="nav-head alt">Sets</h5>
 						</li>
 						<!--#BOUNDARY_MENU#-->
 						<li class="nav-item">
@@ -105,64 +110,110 @@
                 </div>
             </nav>
 
-            
-            
-            
-            
+
+
+
+
             <main class="col-md-10  col-xl-10  col-xxl-11  ms-sm-auto px-md-4">
 
 				<div class="results">
 					<!--<p>[some notice]</p>-->
 				</div>
-				
+
 
 				<!-- ACTIVE PLAYERS -->
 				<div class="row">
-					
+
 					<div class="dev" id="container-instance-timebase">
 						<h3>[TIMEBASE]</h3>
 					</div>
-					<div class="col-md-12  col-xl-5" id="container-instance-backtrack">
 
-						<h3 class="section-header  instance-header  text-secondary">
-							<span class="sides l">_-</span> Backtrack <span class="sides r">-_</span>
-						</h3>
-						
-						<div class="rounded-3  p-3  play-item  dropzone">
-							<h3>empty</h3>
+					<div class="col-md-12  col-xl-5  player-instance-container">
+
+
+
+						<!-- DROP ZONE - BACKTRACK --->
+						<div class="rounded-3  dropzone  dropzone-backtrack">
+							
+							<h3 class="section-header  instance-header  text-secondary">
+								<span class="sides l">_-</span>
+
+									Backtrack
+
+								<span class="sides r">-_</span>
+							</h3>
+
+
+							<div class="socket">
+							</div>
+
+                            <div id="container-instance-backtrack">
+
+                                <div class="rounded-3  p-3  player-empty">
+                                    <h4>empty</h4>
+                                </div>
+
+                            </div>
 						</div>
+
+
 
 					</div>
 					<div class="col-md-6  col-xl-2">
 
-						<h5 class="mt-5">Collection info:</h5>
+						<h5 class="mt-5">Set info:</h5>
 						<div id="collection_description" class="text-secondary"></div>
 
 					</div>
 					<div class="col-md-6  col-xl-5  overflow-hidden  reel-container">
 
+
 						<!-- ANIMATED REEL -->
 						<div id="animated_reel" class="reel"></div>
+						<div id="animated_reel2" class="reel2"></div>
+
 
 					</div>
 					
 				</div>
-				<div class="row">
+				<div class="row  row-eq-height">
 					
-					<div class="col-xl-5" id="container-instance-A">
+					<div class="col-xl-5  player-instance-container">
 
 
-						<h3 class="section-header  instance-header  alt alt-A">
-							<span class="sides l">_-</span> A <span class="sides r">-_</span>
-						</h3>
 
-						<div class="rounded-3 p-3 play-item dropzone">
-							<h3>empty</h3>
+
+
+						<!-- DROP ZONE - A --->
+						<div class="rounded-3  dropzone  dropzone-A">
+
+
+							<h3 class="section-header  instance-header  alt alt-A">
+								<span class="sides l">_-</span>
+
+									A
+
+								<span class="sides r">-_</span>
+							</h3>
+
+
+							<div class="socket">
+							</div>
+
+                            <div id="container-instance-A">
+
+    							<div class="rounded-3 p-3  player-empty">
+									<h4>empty</h4>
+								</div>
+
+							</div>
 						</div>
+
 
 
 					</div>
 					<div class="col-lg-8   offset-lg-2     col-xl-2  offset-xl-0" id="crossfader">
+
 
 
 						<div class="crossfader-wrap">
@@ -175,16 +226,39 @@
 
 						<div class="mb-5  w100  d-block  d-xl-none"></div>
 
+
+
 					</div>
-					<div class="col-xl-5" id="container-instance-B">
+					<div class="col-xl-5  player-instance-container">
 
 
-						<h3 class="section-header  instance-header  alt alt-B">
-							<span class="sides l">_-</span> B <span class="sides r">-_</span>
-						</h3>
-						
-						<div class="rounded-3 p-3 play-item dropzone">
-							<h3>empty</h3>
+
+
+
+						<!-- DROP ZONE - B --->
+						<div class="rounded-3  dropzone  dropzone-B">
+
+
+							<h3 class="section-header  instance-header  alt alt-B">
+								<span class="sides l">_-</span>
+
+									B
+
+								<span class="sides r">-_</span>
+							</h3>
+
+
+
+							<div class="socket">
+							</div>
+
+                            <div id="container-instance-B">
+								
+								<div class="rounded-3 p-3  player-empty">
+									<h4>empty</h4>
+								</div>
+
+							</div>
 						</div>
 
 
@@ -196,11 +270,11 @@
 
 
 
-				<div id="operate-panel-placeholder-unpinned">
+				<div id="operate-panel-placeholder-unpinned" class="operate-panel-placeholder">
 
 
-					<!-- this whole el may be detached and moved into alt placeholder on bottom (and back) --> 
 					<div id="operate-panel">
+						<!-- this whole el may be detached and moved into alt placeholder on bottom (and back) --> 
 
 
 						<div class="row">
@@ -254,7 +328,7 @@
 
 
 
-						<div class="row  my-5">
+						<div class="row  my-3">
 							<div class="col-xl-12">
 
 								<!-- SEEK -->
@@ -266,8 +340,14 @@
 						</div>
 					</div>
 
+				</div>
 
-					<div class="test  dev  d-flex">
+
+
+
+				<div class="row my-5  test  dev">
+					<!-- TEST -->
+					<div class="d-flex">
 						<p>Digit test:</p>
 						<div class="timertest">
 							<span class="time digitall" data-time="0:12"></span>
@@ -280,17 +360,16 @@
 
 
 
-
 				<div class="row my-5 ">
 					<div class="col-xl-6">
 
-						<h5 class="section-header  alt">Available tracks</h5>
+						<h5 class="section-header  alt">Tracks in this set</h5>
 						<div id="container-all-tracks"></div>
 
 					</div>
 					<div class="col-xl-6">
 
-						<h5 class="section-header">Help</h5>
+						<h5 class="section-header">How to use</h5>
 						<dl class="keyboard">
 							<dt class="list-header">
 								<h6 class="alt">Keyboard:</h6>
@@ -301,7 +380,7 @@
 
 							<dt class="float-start">Esc</dt>
 							<dd>Pause / Stop</dd>
-							
+
 							<dt class="float-start disabled">Left / Right</dt>
 							<dd>Seek</dd>
 
@@ -310,21 +389,21 @@
 
 							<dt class="float-start disabled">&lt; / &gt;</dt>
 							<dd class="disabled">Crossfade A&lt;-&gt;B volumes</dd>
-							
+
 							<dt class="float-start disabled">Up / Down</dt>
 							<dd class="disabled">Master volume</dd>
 
 							<dt class="float-start disabled">Z / X</dt>
 							<dd class="disabled">Switch A to prev / next track</dd>
-							
+
 							<dt class="float-start disabled">N / M</dt>
 							<dd class="disabled">Switch B to prev / next track</dd>
 
 							<dt class="float-start">`</dt>
 							<dd>Console open (if available)</dd>
 						</dl>
-						
-						
+
+
 						<dl class="commands">
 							<dt class="list-header">
 								<h6 class="alt">Console commands:</h6>
@@ -364,7 +443,7 @@
 									</div>
 								</div>
 							</div>
-			
+
 							<audio class="dev" controls="" preload="auto">
 								<source src="_player-test-guitar.mp3" type="audio/mp3">
 							</audio>
@@ -375,7 +454,7 @@
 
 
 
-            <div id="operate-panel-placeholder-pinned" class="fixed-bottom"></div>
+            <div id="operate-panel-placeholder-pinned" class="fixed-bottom  operate-panel-placeholder"></div>
 
 
 			<div class="test  dev">

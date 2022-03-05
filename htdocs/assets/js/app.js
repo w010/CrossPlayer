@@ -166,6 +166,51 @@ let Xplayer = {
         });
 
 
+
+        let operatePanel = document.getElementById('operate-panel');
+        let operatePanelPlaceholderUnpinned = document.getElementById('operate-panel-placeholder-unpinned');
+        let operatePanelPlaceholderPinned = document.getElementById('operate-panel-placeholder-pinned');
+        
+        let _operatePanel_initialOffsetTop = operatePanel.offsetTop;
+        let _operatePanel_pinState = false;
+
+
+        $(window).on('scroll', e => {
+            if (Xplayer.config.dev)     return;
+
+            // control point (offset from top) - correction to make it stick earlier than it scroll away completely */
+            // keep it here - window might be resized in the meantime, so calculate always
+            // todo later: check in rwd
+            let _operatePanel_scrollCheckpointCorrection = window.innerHeight / 3;
+
+                // console.log('- el offset: ', _operatePanel_initialOffsetTop);
+                // console.log('- checkpoint: ', _operatePanel_scrollCheckpointCorrection);
+                // console.log('scroll Y: ', window.scrollY);
+                // console.log('viewport: ', window.innerHeight);
+                // check if seekbar showed in viewport, stick it to the page bottom
+                // let pageScroll_isBelowSeekbarTopEdge = (timelineInitialOffsetTop - window.innerHeight - window.scrollY) < 0;
+
+            // check if panel passed check point - is near [viewport's top edge  -  correction] 
+            let pageScroll_operatePanelPassedControlPoint = (_operatePanel_initialOffsetTop - window.scrollY - _operatePanel_scrollCheckpointCorrection) < 0;
+
+
+            // these heights are there for height transition - it needs a value to transit
+            if (pageScroll_operatePanelPassedControlPoint === true  &&  _operatePanel_pinState === false) {
+                _operatePanel_pinState = true;
+                operatePanelPlaceholderUnpinned.style.height = operatePanelPlaceholderUnpinned.offsetHeight + 'px';
+                operatePanelPlaceholderPinned.appendChild(operatePanel);
+                document.body.classList.add('operate-panel-is-pinned');
+
+            } else if (pageScroll_operatePanelPassedControlPoint === false  &&  _operatePanel_pinState === true) {
+                _operatePanel_pinState = false;
+                operatePanelPlaceholderPinned.style.height = operatePanelPlaceholderPinned.offsetHeight + 'px';
+                operatePanelPlaceholderUnpinned.appendChild(operatePanel);
+                document.body.classList.remove('operate-panel-is-pinned');
+            } 
+        });
+
+
+
         // TIMELINE / SEEK
         let timeline = $('#seek-slider');
         
@@ -589,13 +634,13 @@ console.log('TIME FINAL: ', time);
 
         instance_box.append(
             $('<div class="row">').append(
-                $('<div class="col-9  col-sm-9  col-md-8  col-lg-9  position-relative">').append(
+                $('<div class="col-9  col-sm-9  col-md-8  col-lg-9  col-xxl-10  position-relative">').append(
                     el_header,
                     el_status,
                     $('<div class="w100  mb-5  d-block  d-md-none">'),      // todo: check if this actually helps anything || remove
                     el_controls
                 ),
-                $('<div class="col-3  col-sm-3  col-md-4  col-lg-3">').append(
+                $('<div class="col-3  col-sm-3  col-md-4  col-lg-3  col-xxl-2">').append(
                     imageElement
                 ),
                 //$('<div class="col-md-4">')
@@ -656,7 +701,7 @@ console.log('TIME FINAL: ', time);
 
         // cleanup
 
-        container.find('.play-item').remove();
+        container.empty();
         Xplayer.instances[load_as] = null;
 
 
@@ -744,10 +789,15 @@ console.log('TIME FINAL: ', time);
 
             // value passed by the trigger
             Xplayer.setPlayerVolumePercent(param_data.volumeValue, el_player);
+            //instance_box.vc_setDataKey('item-volume-level', param_data.volumeValue, true);
+            instance_box[0].setAttribute('style', '--vc-volume-factor: '+param_data.volumeValue+';');
         });
 
         // set starting value 
         Xplayer.setPlayerVolumePercent(startVolume, el_player);
+        // set attrib to play-item whole wrapper
+        // instance_box.vc_setDataKey('item-volume-level', startVolume.volumeValue, true);
+        instance_box[0].setAttribute('style', '--vc-volume-factor: '+startVolume+';');
 
 
 

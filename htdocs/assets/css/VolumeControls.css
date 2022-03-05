@@ -1,5 +1,5 @@
 
-volume {
+:root {
 
     /*
         Configuration & default theme
@@ -81,6 +81,18 @@ volume {
     --vc-input-text-font-size: 0.8em;
     --vc-input-text-margin: 0.2em auto 0;
     --vc-input-text-border: 1px solid #77777744;
+
+
+
+
+    /* volume factor (to calculate styles according to current volume level) */
+    --vc-volume-factor: 100;
+    --vc-volume-color-saturation-max: 80;
+    --vc-volume-color-saturation-min: 20;
+    --vc-volume-color-saturation-scope: calc(var(--vc-volume-color-saturation-max) - var(--vc-volume-color-saturation-min));
+    --vc-volume-color-saturation-result: calc( var(--vc-volume-color-saturation-min)  +  ( var(--vc-volume-color-saturation-scope)  *  var(--vc-volume-factor)  / 100 ));
+    --vc-volume-color-calculated: hsl(128deg  calc(var(--vc-volume-color-saturation-result) * 1%)  45%);
+    /* (must be recalculated, when changing these values) */ 
 }
 
 
@@ -110,7 +122,8 @@ volume {
         height: calc(var(--vc-size) *       var( --vc-scale-height ));
         border-radius: 50%;
         
-            background-color: #ffc720;
+            /*background-color: #ffc720;*/
+            background-color: var(--vc-volume-color-calculated);
     }
         volume.oftype-rotarypot scale scaledivider  {
                 /*background: #0000ff11;*/
@@ -243,6 +256,8 @@ volume input[type="text"]   {
     color: #808080;
     background-color: transparent;
     border-color: transparent;
+    /* font-family: Tahoma, Arial, serif; */
+    font-family: Consolas, serif;
 }
 
 .oftype-crossfader-related input.slider-value:focus   {
