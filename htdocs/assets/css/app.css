@@ -806,22 +806,46 @@ volume input[type="range"]	    {   display: none;  }
 
 
 /* VOLUME CONTROLS */
+
 volume.oftype-rotarypot {
     width: 100%;
+
+
+    /* recalculations must be done, when changing var values */
+    /*--vc-volume-color-saturation-max: 80;*/
+    /*--vc-volume-color-saturation-min: 20;*/
+    /*--vc-volume-color-saturation-scope: calc(var(--vc-volume-color-saturation-max) - var(--vc-volume-color-saturation-min));*/
+    --vc-volume-color-saturation-result: calc( var(--vc-volume-color-saturation-min)  +  ( var(--vc-volume-color-saturation-scope)  *  var(--vc-volume-factor)  / 100 ));
+    --vc-volume-color-calculated: hsl(128deg  calc(var(--vc-volume-color-saturation-result) * 1%)  45%);
+
+
+    /* use volume level color */
+    --vc-pointer_turn-background: var(--vc-volume-color-calculated);
+    /* also, add glow in that color */
+    --vc-pointer_turn-box-shadow: .16em .1em .31em 0  var( --vc-volume-color-calculated );
+        /* box-shadow: .053em .26em .6em .053em   /   .063rem .31rem .75rem .063rem  */
+
+
+    --vc-pointer_turn-width: .1em;
+    --vc-pointer_turn-border: .05em solid rgba(44, 44, 44, .5);
+    --vc-pointer_turn-border-radius: .063rem .063rem .31rem .31rem;
+
+
+    --vc-pointer_rondo-border: .05em solid #66666644;
+    /*--vc-pointer_rondo-border-radius: .1em;*/
+    /*--vc-pointer_rondo-box-shadow: .063rem .063rem .063rem 0  #08080855;*/
+    /*--vc-pointer_rondo-box-shadow: .053em .053em .053em 0  #08080855;*/
+    --vc-pointer_rondo-background: rgba(176, 176, 176, .15);
+
+    --vc-scale-markline-border-radius: .1em;
 }
-    volume.oftype-rotarypot#vc_rotarypot_test {
+
+    volume#vc_rotarypot_test {
         width: 30em;
     }
 
 
-
     .player-active volume  {
-        /* recalculations must be done, when changing var values */
-        --vc-volume-color-saturation-max: 80;
-        --vc-volume-color-saturation-min: 20;
-        --vc-volume-color-saturation-scope: calc(var(--vc-volume-color-saturation-max) - var(--vc-volume-color-saturation-min));
-        --vc-volume-color-saturation-result: calc( var(--vc-volume-color-saturation-min)  +  ( var(--vc-volume-color-saturation-scope)  *  var(--vc-volume-factor)  / 100 ));
-        --vc-volume-color-calculated: hsl(128deg  calc(var(--vc-volume-color-saturation-result) * 1%)  45%);
     }
 
     volume.oftype-rotarypot knob {
@@ -831,7 +855,7 @@ volume.oftype-rotarypot {
     }
 
     volume.oftype-rotarypot scale  {
-        --vc-scale-markline-border-radius: .1em;
+
     }
             .state_paused  volume.oftype-rotarypot scale  {
                 background-color: #ffc720;
@@ -839,31 +863,12 @@ volume.oftype-rotarypot {
 
         /* POINTER on TURN part */
         volume.oftype-rotarypot knob turn pointer {
-            --vc-pointer_turn-width: .1em;
-
-            --vc-pointer_turn-border: .05em solid rgba(44, 44, 44, .5);
-            --vc-pointer_turn-border-radius: .063rem .063rem .31rem .31rem;
-            /* use volume level color */
-            --vc-pointer_turn-background: var(--vc-volume-color-calculated);
-            --vc-pointer_turn-box-shadow: .063rem .31rem .75rem .063rem  var( --vc-volume-color-calculated );
-
             /* just to not look too bright, when color shadow glows */
             opacity: .9;
-
-                /* reinit calculations */
-            /*width: calc(var(--vc-size) * var( --vc-pointer_turn-width ));*/
-            /*border: var( --vc-pointer_turn-border );*/
-            /*border-radius: var( --vc-pointer_turn-border-radius );*/
-            /*background: var( --vc-pointer_turn-background );*/
-            /*box-shadow: var( --vc-pointer_turn-box-shadow );*/
         }
 
         /* POINTER on RONDO part */
         volume.oftype-rotarypot knob rondo pointer {
-            --vc-pointer_rondo-border: .05em solid #66666644;
-            --vc-pointer_rondo-border-radius: .1em;
-            --vc-pointer_rondo-box-shadow: .063rem .063rem .063rem 0  #08080855;
-            --vc-pointer_rondo-background: rgba(176, 176, 176, .15);
         }
 
 

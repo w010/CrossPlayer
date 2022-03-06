@@ -787,18 +787,15 @@ console.log('TIME FINAL: ', time);
 
         // set the player volume, when VolCtrl volume value has changed
         el_volumectrl.on('set_volume.vc.ctrl', (el, param_data) => {
-
             // value passed by the trigger
             Xplayer.setPlayerVolumePercent(param_data.volumeValue, el_player);
-            //instance_box.vc_setDataKey('item-volume-level', param_data.volumeValue, true);
-            instance_box[0].setAttribute('style', '--vc-volume-factor: '+param_data.volumeValue+';');
+            VolumeControls.updateStyleVar(instance_box, '--vc-volume-factor', param_data.volumeValue);
         });
 
         // set starting value 
         Xplayer.setPlayerVolumePercent(startVolume, el_player);
-        // set attrib to play-item whole wrapper
-        // instance_box.vc_setDataKey('item-volume-level', startVolume.volumeValue, true);
-        instance_box[0].setAttribute('style', '--vc-volume-factor: '+startVolume+';');
+        // set css var with volume, for styling calculations
+        VolumeControls.updateStyleVar(instance_box, '--vc-volume-factor', startVolume);
 
 
 
@@ -1225,7 +1222,9 @@ XplayerNode.init();
 (() => {
     'use strict'
 
-//$('.navbar').empty();
+// $(() => {
+// $('.navbar').empty();
+// $('#operate-panel').empty();
 // return VolumeControls.runTester('VolumeRotaryPot');
 // return VolumeControls.runTester('Crossfader');
 

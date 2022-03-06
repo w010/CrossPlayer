@@ -460,7 +460,7 @@ let VolumeControls = {
         // todo later: first use data- attribs, before localConf values, for some/all options
 
         let divideTo = conf?.divideTo ??                    8;   // 2 parts = 3 lines! 
-        let oversizeStep = conf?.oversizeStep ??            2;   // 5px each step 
+        let oversizeStep = conf?.oversizeStep ??            2;   // px each step 
         let baseMarkHeight = conf?.baseMarkHeight ??        10;
 
         let minRotationAngle = conf?.minRotationAngle ??    225;     // about 7:30
@@ -507,8 +507,7 @@ let VolumeControls = {
 
 
             elScale.append(
-                //$('<scaledivider style="transform: rotate('+offsetInDegrees+'deg);"><markline style="top: '+cssHeightOffset+'px;">')
-                $('<scaledivider style="transform: rotate('+offsetInDegrees+'deg);"><markline class="'+classAttr+'" style="">')
+                $('<scaledivider style="transform: rotate('+offsetInDegrees+'deg);"><markline class="'+classAttr+'" style="--vc-scale-markline-indentoffset: '+cssHeightOffset+';">')
             );
         }
 
@@ -658,6 +657,7 @@ let VolumeControls = {
 
 
     /**
+     * todo: move to utility
      * Set DATA
      * @param el jQuery|object
      * @param key string
@@ -683,6 +683,23 @@ let VolumeControls = {
     },
 
 
+    /**
+     * Set css variable state, to given dom el (Volume Ctrl or one of its parents, depending on needs, value inherits)
+     * @param el
+     * @param varName
+     * @param value
+     */
+    updateStyleVar: (el, varName, value) => {
+        // console.log(el);
+        // console.log(varName);
+        // console.log(value);
+        // todo: add, not overwrite!    // todo: check how it takes care of it
+        // el   //.attr('style', '--vc-volume-factor: '+volume+';')
+
+        el[0].setAttribute('style', varName + ': '+value+';');
+    },
+
+
 
     /**
      * Test - playground sandbox
@@ -690,31 +707,39 @@ let VolumeControls = {
      */
     runTester: (whatToTest) => {
         VolumeControls.configure();
-		let item;
+		let itemCtrl;
 		switch (whatToTest)	{
 			case 'Crossfader':
-                    item = $('<volume id="vc_crossfader_test" class="volume-ctrl  is-loading" data-type="Crossfader"></volume>');
+                    itemCtrl = $('<volume id="vc_crossfader_test" class="volume-ctrl  is-loading" data-type="Crossfader"></volume>');
                     break;
 			case 'VolumeRotaryPot':
 			default:
-                    item = $('<volume style="--vc-size: 4;" id="vc_rotarypot_test" class="volume-ctrl  is-loading" data-type="RotaryPot"></volume>');
+                    itemCtrl = $('<volume style="--vc-size: 4;" id="vc_rotarypot_test" class="volume-ctrl  is-loading" data-type="RotaryPot"></volume>');
                     break;
 		}
         let volume = 50;
 
         $(VolumeControls.config.testerRunInSelector)
-            .attr('style', '--vc-volume-factor: '+volume+';')
             //.addClass('high-contrast')
             .empty().append(
                 $('<h3>VolumeControls - fancy volume test playground</h3>'),
-                item
+                itemCtrl
             );
+
+
+        // update css calculation var, the same like in the app itself 
+        itemCtrl.on('set_volume.vc.ctrl', (el, param_data) => {
+            VolumeControls.updateStyleVar(itemCtrl, '--vc-volume-factor', param_data.volumeValue);
+            // todo: also append info+val somewhere in this test screen
+        });
+        VolumeControls.updateStyleVar(itemCtrl, '--vc-volume-factor', volume);
+
 
         // call global init, which will set up all found items according to global conf's selector, supposedly also our. 
         //  VolumeControls.initialize();
         // or - explicitly init Pot item, using $.fn on Dom el, with example pass of custom markup callables
         //  (alternatively - .vc_makeVolumeCtrl({}, 'RotaryPot'); )   
-        item.vc_makeRotaryPot({
+        itemCtrl.vc_makeRotaryPot({
             value: 16,
             //max: 85,
             markupPrepareFunc: (el, identifier, manipulatorType, conf) => {

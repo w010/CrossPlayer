@@ -19,11 +19,14 @@
     --vc-scale-width: var( --vc-width-overall );
     --vc-scale-height: var( --vc-height-overall );
 
+    /* Scale Markline */
     --vc-scale-markline-background: #222222dd;
     --vc-scale-markline-border-radius: .08em;
-    --vc-scale-markline-width: .08em;
+    --vc-scale-markline-width: .06em;
     --vc-scale-markline-height: 1em;
-    --vc-scale-markline-indent: .3em;
+    --vc-scale-markline-indent: .08em;
+    /* not used yet, but in case - is prepared and value passed in attr. */
+    --vc-scale-markline-indentoffset: 0;
 
 
 
@@ -38,7 +41,6 @@
     --vc-knob-border-radius: 49%;   /* draw it slightly misshapen, to add some naturals */
     --vc-knob-background: transparent;
     --vc-knob-box-shadow: .16em .1em .31em 0  #080808a6;
-    /*--vc-knob-box-shadow: .16em .1em .31em 0 #080808a6;*/
 
 
     /* Rondo: 100% of knob */
