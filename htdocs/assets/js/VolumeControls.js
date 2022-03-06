@@ -690,13 +690,7 @@ let VolumeControls = {
      * @param value
      */
     updateStyleVar: (el, varName, value) => {
-        // console.log(el);
-        // console.log(varName);
-        // console.log(value);
-        // todo: add, not overwrite!    // todo: check how it takes care of it
-        // el   //.attr('style', '--vc-volume-factor: '+volume+';')
-
-        el[0].setAttribute('style', varName + ': '+value+';');
+        el.css(varName, value);
     },
 
 
