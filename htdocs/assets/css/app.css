@@ -955,7 +955,23 @@ body.dev-mode.paused    {
 }
 
 
-
+#sync_monitor   {
+    position: fixed;
+    top: 3em;
+    left: 3em;
+    border: 1px solid #ffc720;
+    background-color: #072148;
+    box-shadow: .2rem .125rem .375rem 0  #080808a6;
+    z-index: 1500;
+    padding: .4em .6em;
+    font-size: .7em;
+}
+    #sync_monitor td, #sync_monitor th  {
+        padding: 0 .4em;
+    }
+    #sync_monitor.ui-draggable   {
+        cursor: move;
+    }
 
 
 /*audio::-webkit-media-controls-panel*/

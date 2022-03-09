@@ -1070,7 +1070,113 @@ console.log('TIME FINAL: ', time);
                 return {    result: Xplayer[method](methodParams.join(' ')), };
             },
         }
-    }
+    },
+
+
+    /**
+     * Audio players synchronization monitoring
+     */
+    synchronizationMonitor: (conf) => {
+        let refresh = conf?.refresh  ??  1000;
+        let monitoringActive = true;
+        // if exist - destroy
+        let monitor = $('#sync_monitor');
+        if (monitor.length) {
+            monitoringActive = false;
+            return monitor.remove();
+        }
+
+        let instances = {
+            time_base: {
+                target_value: $('<td id="monitor_value__time_base">'),
+                target_diff: $('<td id="monitor_diff__time_base">'),
+                currentTime: 0,
+                diffTime: 0,
+            },
+            A: {
+                target_value: $('<td id="monitor_value__A">'),
+                target_diff: $('<td id="monitor_diff__A">'),
+                currentTime: 0,
+                diffTime: 0,
+            },
+            B: {
+                target_value: $('<td id="monitor_value__B">'),
+                target_diff: $('<td id="monitor_diff__B">'),
+                currentTime: 0,
+                diffTime: 0,
+            },
+            backtrack: {
+                target_value: $('<td id="monitor_value__backtrack">'),
+                target_diff: $('<td id="monitor_diff__backtrack">'),
+                currentTime: 0,
+                diffTime: 0,
+            },
+        };
+
+        // build the viewer
+        monitor = $('<div id="sync_monitor">').append(
+            $('<table class="table_ table-dark_ table-borderless_">').append(
+                $('<tr>').append(
+                    $('<th>'),
+                    $('<th>').text('time'),
+                    $('<th>').text('base diff'),
+                ),
+                $('<tr>').append(
+                    $('<td>').text('MASTER/BASE:'),
+                    instances['time_base'].target_value.text('0'),
+                    instances['time_base'].target_diff.text('0'),
+                ),
+                $('<tr>').append(
+                    $('<td>').text('A:'),
+                    instances['A'].target_value.text('0'),
+                    instances['A'].target_diff.text('0'),
+                ),
+                $('<tr>').append(
+                    $('<td>').text('B:'),
+                    instances['B'].target_value.text('0'),
+                    instances['B'].target_diff.text('0'),
+                ),
+                $('<tr>').append(
+                    $('<td>').text('Backtrack:'),
+                    instances['backtrack'].target_value.text('0'),
+                    instances['backtrack'].target_diff.text('0'),
+                ),
+            ),
+        ).appendTo(
+            $('body')
+        )
+        .attr('title', 'Audio synchronization monitor')
+        .draggable();
+
+
+        // start monitoring - loop all players' time position, if state = playing
+        let monitoringLoop = setInterval(() => {
+            if (!monitoringActive)   {
+                console.log('BREAK!');
+                return clearInterval(monitoringLoop);
+            }
+            if (Xplayer.play_state !== 1)   {
+                return;
+            }
+            console.log('------ REFRESH MONITOR');
+
+            // first collect the values at once, with minimum effort,
+            $.each(['time_base', 'A', 'B', 'backtrack'], (i, instanceKey) => {
+                instances[instanceKey].currentTime = Xplayer.instances[instanceKey]?.player[0].currentTime;
+            });
+
+            // ...and then update at once - to get the times more accurate
+            $.each(['time_base', 'A', 'B', 'backtrack'], (i, instanceKey) => {
+                instances[instanceKey].target_value[0].innerHTML = instances[instanceKey].currentTime ?? 0;
+                if (instanceKey !== 'time_base'  &&  instances[instanceKey].currentTime > 0)    {
+                    instances[instanceKey].diffTime = (instances[instanceKey].currentTime - instances['time_base'].currentTime)
+                        .toFixed(6);
+                    instances[instanceKey].target_diff[0].innerHTML = instances[instanceKey].diffTime;
+                }
+            });
+            // console.log(instances);
+        }, refresh);
+    },
 };
 
 

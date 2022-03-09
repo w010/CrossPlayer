@@ -37,14 +37,15 @@ let App = {
         // Hide / remove some dom elements for work (like navbar, or other sticky or big elements which disturbs work by covering everything on big zoom... etc)
         Utility.replaceDomElements({
             '.navbar': '',
-            '#operate-panel': '',
+            //'#operate-panel': '',
         });
-        App.TEST_EXPLICIT = true;
+        // App.TEST_EXPLICIT = true;
         App.DEV = true;
 
 
-        VolumeControls.runTester('VolumeRotaryPot');
-        // VolumeControls.runTester('Crossfader');
+        Xplayer.synchronizationMonitor({refresh: 500});
+        // VolumeControls.runTester('VolumeRotaryPot');     App.TEST_EXPLICIT = true;
+        // VolumeControls.runTester('Crossfader');          App.TEST_EXPLICIT = true;
     },
 
 
