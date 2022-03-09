@@ -73,7 +73,7 @@
 
 /* CLI */
 
-.q-console .prompt    {
+.q-console .cli    {
     /*border: 1px solid red;*/
     border-top: .063rem solid #6850b0;
     background: var(--qc-background);
@@ -84,23 +84,86 @@
     box-shadow: var(--qc-background) 0  -.625rem  1.25rem  .25rem;
 }
 
-    .q-console .command-line    {
-        /*border: 1px solid #0048ff;*/
-        background: var(--qc-background);
-        color: var(--qc-color);
-        
-        border: none;
-        outline: none;
-        padding: 0;
-        margin: 0;
-        
-        vertical-align: top;
+    .q-console .cli .command-line    {
+        width: calc(100% - 1.5rem - 2.5rem);
         display: inline-block;
-        width: calc(100% - 1.5rem - 2.5rem); 
-        height: 1.5rem;
+        position: relative;
+            /*border: 1px solid orange !important;*/
     }
+        .q-console .cli input.command    {
+            background: var(--qc-background);
+            border: none;
+            color: var(--qc-color);
+                /*border: 1px solid yellow !important;*/
+                /*background: red;*/
 
-    .q-console .symbol::before {
+            outline: none;
+            padding: 0;
+            margin: 0;
+
+            vertical-align: top;
+            display: inline-block;
+            width: 100%;
+            height: 1.5rem;
+            position: relative;
+        }
+
+            .q-console .cli .autocomplete    {
+                position: absolute;
+                top: 0; left: 0;
+
+                pointer-events: none;
+                    /*border: 1px solid #00ff95;*/
+                    /*background-color: #988131;*/
+            }
+                /* the ac-spacer MUST keep the same text style like the text input
+                    to calculate valid offset of autocompletion box
+                    (that's the trick to position item next to the input cursor:
+                     - a hidden layer with innerhtml = input value, which should do the same offset)
+                */
+                .q-console .cli .ac-spacer    {
+                        /*border: 1px solid red;*/
+                        /*background-color: #0f5132;*/
+                    position: relative;
+                    /*bottom: -20px;*/
+                    /*opacity: .3;*/
+                    opacity: 0;
+                    pointer-events: none;
+                }
+                .q-console .cli .ac-container    {
+                    position: absolute;
+                    bottom: 0;
+                    left: 100%;
+                    margin-left: .2em;
+                    box-shadow: 0.15rem 0.15rem 0.4em 0.1rem #02020291;
+                        /*min-width: 5em;*/
+                        /*min-height: 5em;*/
+                        /*border: 1px solid red;*/
+                        /*background-color: #0f5132;*/
+                }
+                    .q-console .cli .ac-container .ac-item   {
+                            /*border: 1px solid blue;*/
+                            /*background-color: #5c636a;*/
+                        background-color: var(--wtp-background-general);
+                        border: 1px solid var(--wtp-background-alt);
+                        color: var(--wtp-gray5);
+                        padding: 0 2px;
+                        white-space: pre;
+                        pointer-events: initial;
+                        cursor: alias;
+                    }
+                        .q-console .cli .ac-container .ac-completion   {
+                            font-style: italic;
+                        }
+                        .q-console .cli .ac-container .ac-cmd   {
+                            color: var(--wtp-gray2);
+                        }
+                    .q-console .cli .ac-container .ac-item:hover   {
+                        background-color: var(--wtp-background-alt);
+                        border: 1px solid var(--wtp-background-general);
+                    }
+
+    .q-console .cli .prompt::before {
         content: "$";
         /*border: 1px solid #0048ff;*/
         width: 1.5rem;
@@ -108,6 +171,6 @@
         display: block;
         text-align: center;
 }
-    .q-console .symbol    {
+    .q-console .cli .prompt    {
         display: inline-block;
     }

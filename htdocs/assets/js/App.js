@@ -33,7 +33,8 @@ let App = {
             // usually the line below SHOULD NOT BE COMMENTED OUT!
         return;
 
-        // QConsole.cliExec('help');
+        // QConsole.cliExec('xplayer  Test "a  b"  "c" "d"');
+        QConsole.cliAutocomplete('de');     $('input.command').val('de');
 
         // Hide / remove some dom elements for work (like navbar, or other sticky or big elements which disturbs work by covering everything on big zoom... etc)
         Utility.replaceDomElements({

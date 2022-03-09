@@ -523,6 +523,7 @@ console.log('TIME FINAL: ', time);
             return console.error('Container for host master / time base player cannot be determined - trying  #container-instance-timebase ');
         }
         if (typeof callbackPlayerReady !== 'function')  callbackPlayerReady = ()=>{};
+        if (App.DEBUG > 1)  App.logToConsole('Track file load: REFERENCE', fileConf);   // todo: also in the other
 
 
         // set some values
@@ -1076,9 +1077,9 @@ console.log('TIME FINAL: ', time);
     cliCommands: () => {
         return {
             'reel': {
-                    title: 'ReelTape method',
+                    title: 'Call object method',
                     syntax: 'ReelTape METHOD [PARAM]...',
-                    description: 'ReelTape lib method call',
+                    description: 'ReelTape.METHOD([PARAM]...) call',
                     callable: (params) => {
                         // todo later: handle object methods calling, like other
                         QConsole.collapse();
@@ -1089,21 +1090,25 @@ console.log('TIME FINAL: ', time);
             },
 
             'xplayer': {
-                    title: 'Xplayer method',
+                    title: 'Call object method',
                     syntax: 'Xplayer METHOD [PARAM]...',
-                    description: 'Xplayer lib method call',
+                    description: 'Call Xplayer.METHOD([PARAM]...)',
                     callable: (params) => {
-                        console.log('Xplayer - params: ', params);
+                        let objName = 'Xplayer';
                         let method = params[0];
                         let methodParams = params.slice(1);
-                        console.log(methodParams);
+                        //console.log(objName+' - params: ', params);
+                        //console.log(methodParams);
                         if (!method) {
-                            return {    result: 'Xplayer: no method specified!',    level: 'warning'     };
+                            return {    result: objName+': no method specified!',    level: 'warning'     };
                         }
+                        // todo: check: maybe we can fetch jsdoc prop or visibility details? try like in this object iteration loop */
+                        // note, that method name is case sensitive!
                         if (typeof Xplayer[method] !== 'function') {
-                            return {    result: 'Xplayer: cannot find method `'+method+'`',    level: 'error'     };
+                            return {    result: objName+': cannot find method `'+method+'`',    level: 'error'     };
                         }
-                        return {    result: Xplayer[method](methodParams.join(' ')), };
+                        let evalCode = objName+'.' +method+'('+ methodParams.join(', ') + ')';
+                        return QConsole.cliEvalCode(evalCode);
                     },
             },
 

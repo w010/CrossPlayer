@@ -3,7 +3,7 @@
  * Can handle many parallel consoles in the same time, ie. to separate your topics and switch to new empty one.
  * (like in ConEmu)
  * 
- * v0.3
+ * v0.4
  * 
  * wolo.pl '.' studio
  * 2022
@@ -132,7 +132,18 @@ let QConsole = {
             .removeClass('hidden')
             .prop('style', '--qc-size: '+QConsole.config.expandSize)
             .append(
-                $('<div class="log-container"></div>   <div class="prompt"> <div class="symbol"></div> <input class="command-line" placeholder="..."> </div>')
+                $('<div class="log-container"></div>'),
+                // $('<div class="cli"> <div class="prompt"></div> <div class="command-line"> <div class="autocomplete"></div> <input class="command" placeholder="..."> </div>')
+                $('<div class="cli">').append(
+                        $('<div class="prompt"></div>'),
+                        $('<div class="command-line">').append(
+                                $('<input class="command" placeholder="...">'),
+                                $('<div class="autocomplete">').append(
+                                        $('<div class="ac-spacer">'),
+                                        $('<div class="ac-container">'),
+                                )
+                        )
+                )
             );
 
 
@@ -165,14 +176,21 @@ let QConsole = {
         }
 
         // keyboard cli
-        Qel.find('.command-line').on('keydown', e => {
+        Qel.find('input.command').on('keydown', e => {
             //console.log(e.keyCode);
             if (e.keyCode  ===  38) // cursor UP - previous from history
                 return QConsole.cliInputHistory(e, -1);
             if (e.keyCode  ===  40) // cursor DOWN - next from history
                 return QConsole.cliInputHistory(e, +1);
             if (e.keyCode  ===  13) // enter - handle current input value
-                return QConsole.cliInputHandle(e);
+                return QConsole.cliHandleSubmit(e);
+        })
+        .on('keyup', e => {
+            //console.log(e.keyCode);
+            if (0)  {   // autocomplete enabled?. todo: option
+                QConsole.cliHandleTyping(e);
+            }
+            //if (e.keyCode  ===  9) // todo: tab: autocomplete?  // todo: writing: autocomplete when writing, after first tab use?
         });
 
 
@@ -266,7 +284,7 @@ let QConsole = {
         let console_container = QConsole.el.find('.log-container');
         console_container.append(item);
         QConsole.scrollUpdate();
-        // todo: option
+        // todo: option in settings - whether to call console.logs here
         if (data)   console.log(log, data)
         else        console.log(log)
     },
@@ -327,7 +345,7 @@ let QConsole = {
      * @param e Keyboard event (usually enter key)
      * @protected
      */
-    cliInputHandle: (e) => {
+    cliHandleSubmit: (e) => {
         let cliEl = e.currentTarget;
         let cmdLine = cliEl.value;
 
@@ -337,24 +355,19 @@ let QConsole = {
         cliEl.value = '';
     },
 
-        /**
-         * Command Line Interface - post a line of user input
-         * (parses parameters, adds line to history stack)
-         * @param cmdLine string
-         */
-        /*cliSend: (cmdLine) => {
-            // split cmd line to parts (filter - avoid empty)
-            let cmdParts = cmdLine.split(' ').filter(item => item);
-            let command = cmdParts[0];
-            let params = cmdParts.slice(1);
-            // console.log('command: ' + command, params);
+    /**
+     * Command Line Interface - handle input/submit
+     * @param e Keyboard event (usually enter key)
+     * @protected
+     */
+    cliHandleTyping: (e) => {
+        let cliEl = e.currentTarget;
+        let cmdLine = cliEl.value;
+        //console.log(e);
+        //console.log(cmdLine);
 
-            QConsole.cli.history.push(cmdLine);
-            QConsole.cli.historyPosition = QConsole.cli.history.length - 1;
-
-            // call command - exec its callable, if registered
-            return QConsole.cliExec(command, params);
-        },*/
+        QConsole.cliAutocomplete(cmdLine);
+    },
 
     /**
      * Command Line Interface - parse a line of user input
@@ -362,9 +375,9 @@ let QConsole = {
      * @protected
      */
     cliParse: (cmdLine) => {
-        // split cmd line to parts (filter - avoid empty)   // todo: split parameters by quotes first!
-        let cmdParts = cmdLine.split(' ').filter(item => item);
-        let command = cmdParts[0];
+        // split cmd line to parts (filter - avoid empty)
+        let cmdParts = cmdLine.split(/("[^"]+"|[^\s"]+)/gmiu).filter(i => i.trim());
+        let command = cmdParts[0].toLowerCase();
         let params = cmdParts.slice(1);
         // console.log('command: ' + command, params);
         return  {
@@ -406,6 +419,25 @@ let QConsole = {
         return output;
     },
 
+
+    /**
+     * For use in CLI callables. Provides standard check and returns standard output
+     * @param code string
+     * @protected
+     */
+    cliEvalCode: (code) => {
+        let output = {result: null, level: 'info'}
+        try {
+            console.log('- evaluate code: ', code);
+            output.result = eval(code);
+        } catch (e) {
+            output.result = e.message;  // e.stack - more details
+            output.level = 'error';
+        }
+        return output;
+    },
+
+
     cliInputHistory: (e, direction) => {
         direction = Utility.forceNumberInScope(parseInt(direction),-1,1);  // force between -1 and 1, exit when no history or no direction given
         if (!QConsole.cli.history.length || !direction)
@@ -436,17 +468,18 @@ let QConsole = {
         if (commands)   {
             $.each(commands, (cmd, handleConf) => {
                 QConsole.cli.commands[cmd.toLowerCase()] = handleConf;
-            })
+            });
+            // sort alphabetically
+            QConsole.cli.commands = Object.fromEntries(Object.entries(QConsole.cli.commands).sort());
         }
         // internal - setup QConsole default commands
         else    {
             let defaultCommands = {
-                // todo: check and describe whether they are lower-cased
-                // todo: sort before displaying full help
+                // commands are toLowerCase-d on register and when executed. (only the command itself, not the whole line) 
                 'help': {
-                        title: "Commands reference",
-                        syntax: "help [COMMAND]",
-                        description: "Show console command(s) informations",
+                        title: 'Commands reference',
+                        syntax: 'help [COMMAND]',
+                        description: 'Show console command(s) informations',
                         callable: (params) => {
                             let result = '';
                             let level = 'info';
@@ -478,15 +511,14 @@ let QConsole = {
                                     }
                                 });
                             }
-
                             return {    result: result,     level: level     };
                         },
                 },
 
                 'eval': {   // todo later: restrict to DEV
-                        title: "Evaluate JavaScript expression",
-                        syntax: "eval CODE",
-                        description: "Run JS code",
+                        title: 'Run JS code',
+                        syntax: 'eval CODE',
+                        description: 'Evaluate JavaScript expression \'CODE\'',
                         callable: (params) => {
                             console.log('eval - params:', params);
                             if (params.length)  {
@@ -497,21 +529,25 @@ let QConsole = {
                 },
 
                 'qconsole': {
-                        title: 'QConsole method',
+                        title: 'Call object method',
                         syntax: 'QConsole METHOD [PARAM]...',
-                        description: 'QConsole lib method call',
+                        description: 'Call QConsole.METHOD([PARAM]...)',
                         callable: (params) => {
-                            console.log('QConsole - params: ', params);
+                            let objName = 'QConsole';
                             let method = params[0];
                             let methodParams = params.slice(1);
+                            //console.log(objName+' - params: ', params);
                             console.log(methodParams);
+                            // todo: when ready, take-out changes from 'xplayer' object-method command, use cliEvalCode as well
                             if (!method) {
-                                return {    result: 'QConsole: no method specified!',    level: 'warning'     };
+                                return {    result: objName+': no method specified!',    level: 'warning'     };
                             }
-                            if (typeof QConsole[method] !== 'function') {
-                                return {    result: 'QConsole: cannot find method `'+method+'`',    level: 'error'     };
+                            // note, that method name is case sensitive!
+                            if (typeof Xplayer[method] !== 'function') {
+                                return {    result: objName+': cannot find method `'+method+'`',    level: 'error'     };
                             }
-                            return {    result: QConsole[method](methodParams.join(' ')), };
+                            let evalCode = objName+'.' +method+'('+ methodParams.join(', ') + ')';
+                            return QConsole.cliEvalCode(evalCode);
                         },
                 },
             };
@@ -534,6 +570,66 @@ let QConsole = {
         }
     },
 
+
+    cliAutocomplete: (cmdLine) => {
+        cmdLine = cmdLine.trim().toLowerCase();
+        if (!cmdLine)   {
+            return;
+        }
+        // todo: link to instance on init, to reuse
+        let acContainer = QConsole.el.get(0).querySelectorAll('.autocomplete .ac-container')[0];
+        let acSpacer = QConsole.el.get(0).querySelectorAll('.autocomplete .ac-spacer')[0];
+        let cliInput = QConsole.el.get(0).querySelectorAll('input.command')[0];
+
+        // reset - cleanup each time
+        acContainer.replaceChildren();
+
+        // set the same text value to the spacer block under the input (offset-resizer) - this will allow to calculate the offset finally
+        acSpacer.innerText = cmdLine;
+            // maybe with current styles it will align automatically, if not - use that offset
+            // let caretOffset = acSpacer.offsetWidth;
+
+
+        // build the autocompletion-items and add to ac container
+        let addItem = (conf) => {
+            const item = document.createElement('div');
+                item.classList.add('ac-item');
+            const _command = document.createElement('div');
+                _command.classList.add('ac-cmd');
+                _command.innerText = conf.commandDetails;
+            const _completion = document.createElement('div')
+                _completion.innerText = conf.completionPart;
+                _completion.classList.add('ac-completion');
+
+            item.appendChild(_command);
+            item.appendChild(_completion);
+            acContainer.appendChild(item);
+
+            item.addEventListener('click', (e) => {
+                cliInput.value = conf.command;
+                acSpacer.innerText = conf.command;
+            });
+        };
+
+
+        // search for the string in keys and collect completion propositions 
+        $.each(QConsole.cli.commands, (command, handleConf) => {
+            let cmdNameMatchPos = command.indexOf(cmdLine);
+            // take these with match on pos 0 (begins with input str), exit if it's compled  
+            if (cmdNameMatchPos === 0  &&  cmdLine !== command)   {
+                    // console.log(cmdNameMatchPos);
+                    // console.log(command);
+                    // console.log(handleConf);
+
+                addItem({
+                    command: command,
+                    commandDetails: '> ' + (handleConf?.syntax ?? command)
+                            + (handleConf?.title  ?  '  -  '+handleConf.title  :  ''),
+                    completionPart: command.split(cmdLine, 2)[1] ?? '',
+                })
+            }
+        });
+    },
 
     /**
      * Extra functionality - write log nessages to file. Helps when console is hidden for user or unavailable for other reason,
