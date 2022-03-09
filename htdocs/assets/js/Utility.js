@@ -174,4 +174,26 @@ let Utility = {
         // final From-To force
         return Math.min(Math.max(value, min), max);
     },
+
+
+    /**
+     * Mass dom replace
+     * @param input Json as Selector => (function|string)
+     */
+    replaceDomElements: (input) => {
+        for (const [selector, replacement]  of  Object.entries(input)) {
+            let el = $(selector);
+            if (!el.length)  {
+                return;
+            }
+            switch (typeof replacement)    {
+                case 'string':
+                    el.get(0).innerHTML = '';
+                    break;
+                case 'function':
+                    el.get(0).innerHTML = replacement();
+                    break;
+            }
+        }
+    },
 }

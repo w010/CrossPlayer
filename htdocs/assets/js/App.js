@@ -18,11 +18,6 @@ let App = {
      */
     DEBUG: 0,
     /**
-     * Hide / remove some dom elements for work (like navbar, or other sticky or big elements which disturbs work by covering everything on big zoom... etc)
-     * (array of selector => callable|string)
-     */
-    REPLACE_ELEMENTS: {},
-    /**
      * Allows to test some feature alone/fullpage - disables running the actual App!
      */
     TEST_EXPLICIT: false,
@@ -38,32 +33,18 @@ let App = {
             // usually the line below SHOULD NOT BE COMMENTED OUT!
         return;
 
-        App.REPLACE_ELEMENTS = {
+
+        // Hide / remove some dom elements for work (like navbar, or other sticky or big elements which disturbs work by covering everything on big zoom... etc)
+        Utility.replaceDomElements({
             '.navbar': '',
             '#operate-panel': '',
-        };
+        });
         App.TEST_EXPLICIT = true;
         App.DEV = true;
 
 
         VolumeControls.runTester('VolumeRotaryPot');
         // VolumeControls.runTester('Crossfader');
-
-
-        for (const [selector, replacement]  of  Object.entries(App.REPLACE_ELEMENTS)) {
-            let el = $(selector);
-            if (el.length)  {
-                return;
-            }
-            switch (typeof replacement)    {
-                case 'string':
-                    el.get(0).innerHTML = '';
-                    break;
-                case 'function':
-                    el.get(0).innerHTML = replacement();
-                    break;
-            }
-        }
     },
 
 
