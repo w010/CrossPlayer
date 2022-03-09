@@ -19,16 +19,77 @@ let App = {
     DEBUG: 0,
     /**
      * Hide / remove some dom elements for work (like navbar, or other sticky or big elements which disturbs work by covering everything on big zoom... etc)
-     * (array of selector strings)
+     * (array of selector => callable|string)
      */
-    HIDE_ELEMENTS_FOR_DEV: [],
+    REPLACE_ELEMENTS: {},
+    /**
+     * Allows to test some feature alone/fullpage - disables running the actual App!
+     */
+    TEST_EXPLICIT: false,
 
 
 
+
+    /**
+     * Developer helper
+     * @private
+     */
+    _lowLevel: () => {
+            // usually the line below SHOULD NOT BE COMMENTED OUT!
+        return;
+
+        App.REPLACE_ELEMENTS = {
+            '.navbar': '',
+            '#operate-panel': '',
+        };
+        App.TEST_EXPLICIT = true;
+        App.DEV = true;
+
+
+        VolumeControls.runTester('VolumeRotaryPot');
+        // VolumeControls.runTester('Crossfader');
+
+
+        for (const [selector, replacement]  of  Object.entries(App.REPLACE_ELEMENTS)) {
+            let el = $(selector);
+            if (el.length)  {
+                return;
+            }
+            switch (typeof replacement)    {
+                case 'string':
+                    el.get(0).innerHTML = '';
+                    break;
+                case 'function':
+                    el.get(0).innerHTML = replacement();
+                    break;
+            }
+        }
+    },
+
+
+
+    /**
+     * System check, prepare env, etc. 
+     */
     warmUpEnvironment: () => {
         if (document.body.classList.contains('dev-mode'))  {
             App.DEV = true;
         }
+
+        // Build custom console (dedicated for standalone mode)
+
+        QConsole.configure({dev: App.DEV /*startState: 'expanded'*/});
+        QConsole.cliRegisterCommands(Xplayer.cliCommands());    // or call after app config initialize?
+        QConsole.available = true;
+        $('#console').QC_makeItAConsole();
+    },
+
+
+    /**
+     * Last preparations before App boot
+     */
+    preBoot: () => {
+        App._lowLevel();
     },
 
 };
@@ -44,38 +105,33 @@ let App = {
     'use strict'
 
 
-    // Prepare some values on the very beginning
+    // Prepare some stuff on the very beginning
 
     App.warmUpEnvironment();
 
 
 
 
-    // Build custom console (dedicated for standalone mode)
-
-    QConsole.configure({dev: App.DEV /*startState: 'expanded'*/});
-    QConsole.cliRegisterCommands(Xplayer.cliCommands());    // or call after app config initialize?
-    QConsole.available = true;
-    $('#console').QC_makeItAConsole();
-
-
-
 
     // Check node.js availability (standalone mode)
 
-    XplayerNode.initialize();
+    XplayerNode.tryToInit();
 
 
+
+
+
+    // Last things before we go
+
+    App.preBoot();
+
+    if (App.TEST_EXPLICIT)  {
+        return Xplayer.writeToConsole('Explicit feature test mode! App boot disabled', null, 'warning');
+    }
 
 
 
     // Start the App
-
-
-// $('.navbar').empty();
-// $('#operate-panel').empty();
-// return VolumeControls.runTester('VolumeRotaryPot');
-// return VolumeControls.runTester('Crossfader');
 
     let boot = (incomingConfig) => {
         Xplayer.configure(incomingConfig);

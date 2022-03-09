@@ -17,7 +17,7 @@ let XplayerNode = {
     },
     
 
-    initialize: () => {
+    tryToInit: () => {
         if (typeof nw !== 'undefined')  {
             XplayerNode.operating = true;
             XplayerNode.n.fs = nw.require('fs');
