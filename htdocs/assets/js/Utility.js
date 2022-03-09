@@ -196,4 +196,33 @@ let Utility = {
             }
         }
     },
+
+
+
+    /**
+     * Link range inputs with their text fields
+     * @param selector string Range inputs. You may be limit the selector here
+     */
+    linkRangeInputs: (selector) => {
+        if (!selector)
+            selector = 'input[type=range]';
+        $( selector ).each( (i, el) => {
+            // take range input and find its text input by id
+            let range = $(el),
+                text = $( '#' + range.prop('id').replace('__range', '') );
+
+            text.on( 'keyup change', () => {
+                // prevent typing beyond range's scope
+                let value = Utility.forceNumberInScope(text.val(), range.prop('min'), range.prop('max'));
+                text.val( value );
+                range.val( value );
+            }).addClass('linked-to-rangeinput');
+
+            range.on( 'input change', () => {
+                text.val( range.val() );
+                text.trigger('change');
+            }).addClass('linked-to-textinput');
+        });
+    },
+
 }

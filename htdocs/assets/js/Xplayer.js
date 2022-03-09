@@ -104,9 +104,14 @@ let Xplayer = {
         Xplayer.config?.tracks.forEach((fileConf, i) => {
             Xplayer.loadTrack(i, fileConf);
         });
-        
 
-        //Xplayer.linkRangeInputs();
+        // UI features
+
+        // drag&drop
+        Xplayer.initDraggable();
+        Xplayer.initDroppable();
+
+        //Utility.linkRangeInputs(':not(volume) input[type=range]');    // (omit volume manipulators - they link on their own)
         Xplayer.initFancyVolumes();
         Xplayer.initLogo();
 
@@ -248,8 +253,11 @@ let Xplayer = {
         );
 
 
-        $('.appversion').on('dblclick', () => {
-            $('body').toggleClass('dev-mode');
+        $('.appversion').on('click', (e) => {
+            // on triple click
+            if (e.detail === 3) {
+                $('body').toggleClass('dev-mode');
+            }
         });
 
         //if (Xplayer.config.console_show)    {}
@@ -398,7 +406,58 @@ console.log('TIME FINAL: ', time);
     },
 
 
+    /**
+     * Take the track from the bottom list and put it into play slot using mouse.
+     * Nice feature but not necessary for the player to be functional - if causes problems, disable
+     */
+    initDraggable: () => {
+        /*$('#container-all-tracks')
+            .sortable({
+            });*/
 
+        $('#container-all-tracks .play-item.track-selectable')
+            .draggable({
+                revert: true,
+                snap: '.dropzone',
+                connectToSortable: '#container-all-tracks',
+                scroll: true,
+                scrollSensitivity: 100,
+                scrollSpeed: 100,
+                // helper: 'clone',
+            });
+    },
+
+
+    /**
+     * Track drop areas
+     */
+    initDroppable: () => {
+        let dropConf = {
+            accept: '.play-item.track-selectable',
+            drop: (event, ui) => {
+                let dropItem = $(ui.draggable);
+                let dropZone = $(event.target);
+                let dropZoneInstanceKey = dropZone.prop('id').replace('dropzone-', '');
+
+                if (App.DEBUG > 1)    {
+                    console.log('dropZoneInstanceKey: ' + dropZoneInstanceKey);
+                    console.log(dropItem);
+                    // console.log(event);
+                    // console.log(ui);
+                }
+
+                if (App.DEBUG)    {
+                    let title = $(dropItem).find('h4').text();
+                    console.log('dropped into slot: ' + dropZoneInstanceKey + ' item with title: ' + title);
+                }
+                $(dropItem).find('.btn.play_as_'+dropZoneInstanceKey).click();
+            }
+        };
+
+        $( "#dropzone-A" ).droppable(dropConf);
+        $( "#dropzone-B" ).droppable(dropConf);
+        $( "#dropzone-backtrack" ).droppable(dropConf);
+    },
 
 
     initFancyVolumes: () => {
@@ -419,34 +478,6 @@ console.log('TIME FINAL: ', time);
         player[0].volume = Utility.forceNumberInScope(volume, 0, 100) / 100;
     },
 
-
-    /**
-     * todo: move to utility. test first
-     * link range inputs with their text fields
-     * (omit volume manipulators - they link on their own)
-     */
-    linkRangeInputs: (selector) => {
-        if (!selector)
-            //selector = 'input[type=range]';
-            selector = ':not(volume) input[type=range]';
-        $( selector ).each( (i, el) => {
-            // take range input and find its text input by id
-            let range = $(el),
-                text = $( '#' + range.prop('id').replace('__range', '') );
-
-            text.on( 'keyup change', () => {
-                // prevent typing beyond range's scope
-                let value = Utility.forceNumberInScope(text.val(), range.prop('min'), range.prop('max'));
-                text.val( value );
-                range.val( value );
-            }).addClass('linked-to-rangeinput');
-
-            range.on( 'input change', () => {
-                text.val( range.val() );
-                text.trigger('change');
-            }).addClass('linked-to-textinput');
-        });
-    },
 
 
     loadTrack: (i, fileConf) => {
@@ -602,7 +633,7 @@ console.log('TIME FINAL: ', time);
         if (!container) {
             return console.error('Container for all tracks selector cannot be determined - #container-all-tracks ');
         }
-        if (typeof callback !== 'function')  callback = ()=>{};
+        //if (typeof callback !== 'function')  callback = ()=>{};   // todo later: check & finish
 
         // set some values
 
@@ -615,14 +646,14 @@ console.log('TIME FINAL: ', time);
         // build markup
         let el_header = $('<h4>').text(title);
         
-        let play_as_a = $('<button class="btn btn-l btn-square  play_as_a" type="button"><b>A</b></button>');
-        let play_as_b = $('<button class="btn btn-l btn-square  play_as_b" type="button"><b>B</b></button>');
+        let play_as_A = $('<button class="btn btn-l btn-square  play_as_A" type="button"><b>A</b></button>');
+        let play_as_B = $('<button class="btn btn-l btn-square  play_as_B" type="button"><b>B</b></button>');
         let play_as_backtrack = $('<button class="btn btn-l   play_as_backtrack" type="button"><b>backtrack</b></button>');
         
         let el_controls = $('<div class="controls  me-2  position-absolute  bottom-0  begin-0">')
                 .append('<span class="small">Play as: &nbsp;</span>')
-                .append(play_as_a)
-                .append(play_as_b)
+                .append(play_as_A)
+                .append(play_as_B)
                 .append(play_as_backtrack);
 
         let el_status = $('<div class="status"><span class="indicator"></span><p></p>')
@@ -650,13 +681,13 @@ console.log('TIME FINAL: ', time);
 
         // bind actions
         
-        play_as_a.click(() => {
+        play_as_A.click(() => {
             Xplayer.track_embedInstance(fileConf, filename, title, 'A', (player) => {
                 //console.log('CALLBACK - SYNC TIME & PLAY');
                 Xplayer.transportStart();
             });
         });
-        play_as_b.click(() => {
+        play_as_B.click(() => {
             Xplayer.track_embedInstance(fileConf, filename, title, 'B', (player) => {
                 Xplayer.transportStart();
             });
