@@ -3,7 +3,7 @@
  * Can handle many parallel consoles in the same time, ie. to separate your topics and switch to new empty one.
  * (like in ConEmu)
  * 
- * v0.2
+ * v0.3
  * 
  * wolo.pl '.' studio
  * 2022
@@ -34,7 +34,7 @@ let QConsole = {
     // global configuration
     config: {},
 
-    dev: false,
+    DEV: false,
 
     available: false,
 
@@ -86,7 +86,7 @@ let QConsole = {
             bindKeystrokesGlobal:     setup?.bindKeystrokesGlobal
                             ??  {
                                         // ` - open console
-                                    192:    (e) => {  QConsole.toggle();  },
+                                    192:    (e) => {  QConsole.toggle();  e.preventDefault(); },
                             },
 
             bindKeystrokesInConsole:     setup?.bindKeystrokesInConsole
@@ -100,7 +100,7 @@ let QConsole = {
         }
 
         if (setup?.dev)
-            QConsole.dev = true;
+            QConsole.DEV = true;
 
         QConsole.cliRegisterCommands();
     },
@@ -168,11 +168,11 @@ let QConsole = {
         Qel.find('.command-line').on('keydown', e => {
             //console.log(e.keyCode);
             if (e.keyCode  ===  38) // cursor UP - previous from history
-                return QConsole.cliHistory(e, -1);
+                return QConsole.cliInputHistory(e, -1);
             if (e.keyCode  ===  40) // cursor DOWN - next from history
-                return QConsole.cliHistory(e, +1);
-            if (e.keyCode  ===  13) // enter - try to execute current input value
-                return QConsole.cliHandle(e);
+                return QConsole.cliInputHistory(e, +1);
+            if (e.keyCode  ===  13) // enter - handle current input value
+                return QConsole.cliInputHandle(e);
         });
 
 
@@ -200,13 +200,42 @@ let QConsole = {
         let applyTo = selectors?.applyTo  ||  '#console';
 
         $(applyTo).each( (i, el) => {
-            if (QConsole.dev)   console.info('- auto init QC for selector: '+selectors?.applyTo, el);
+            if (QConsole.DEV)   console.info('- auto init QC for selector: '+selectors?.applyTo, el);
 
             $(el).QConsole_makeItAConsole();
         });
     },
 
-    
+
+    /**
+     * Write some text output to QConsole (does not send it to devtools!)
+     * @param msg string
+     * @param level ?string
+     */
+    write: (msg, level) => {
+        if (!QConsole.el)    {
+            return console.error('QConsole Not initialized? Instance $el not set');
+        }
+        if (!level  ||  (level !== 'log'  &&  level !== 'info'  &&  level !== 'warning'  &&  level !== 'error')) {
+            level = 'log';
+        }
+
+        let item;
+            item = $('<pre class="item  item-write  level-'+level+'">').text(msg);
+        //item.attr('title', '');
+
+        let console_container = QConsole.el.find('.log-container');
+        console_container.append(item);
+        QConsole.scrollUpdate();
+    },
+
+
+    /**
+     * 
+     * @param log string
+     * @param data mixed
+     * @param level ?string
+     */
     log: (log, data, level) => {
         if (!QConsole.el)    {
             return console.error('QConsole Not initialized? Instance $el not set');
@@ -215,20 +244,25 @@ let QConsole = {
             level = 'log';
         }
 
-        // todo: error level
         let backtrace = (new Error().stack).replace(/^Error/, 'Trace:');
         let item;
         if (data)   {
-            let dataDump = JSON.stringify(data, null, "\t");
-            item = $('<pre class="item level-'+level+'">').text(log + "\n" + (dataDump || '[cannot json.stringify variable]'));
+            let dataDump;
+            switch (typeof data)    {
+                case 'object':
+                    dataDump = JSON.stringify(data, null, "\t");
+                    break;
+                default:
+                    dataDump = data.toString();
+            }
+            item = $('<pre class="item  item-log  with-data  level-'+level+'">').text(log + "\n" + (dataDump || '[cannot json.stringify variable]'));
         }
         else    {
-            item = $('<div class="item level-'+level+'">').text(log);
+            item = $('<div class="item  item-log  without-data  level-'+level+'">').text(log);
         }
         item.attr('title', backtrace);
         
 
-        //let console_custom = $('#console');
         let console_container = QConsole.el.find('.log-container');
         console_container.append(item);
         QConsole.scrollUpdate();
@@ -238,13 +272,13 @@ let QConsole = {
     },
 
     info: (log, data) => {
-        this.log(log, data, 'info');
+        QConsole.log(log, data, 'info');
     },
     warning: (log, data) => {
-        this.log(log, data, 'warning');
+        QConsole.log(log, data, 'warning');
     },
     error: (log, data) => {
-        this.log(log, data, 'error');
+        QConsole.log(log, data, 'error');
     },
 
 
@@ -289,44 +323,98 @@ let QConsole = {
 
 
     /**
-     * Extra functionality - command line interface
+     * Command Line Interface - handle input/submit
      * @param e Keyboard event (usually enter key)
+     * @protected
      */
-    cliHandle: (e) => {
+    cliInputHandle: (e) => {
         let cliEl = e.currentTarget;
-        let cmd = cliEl.value;
-        // split cmd line to parts (filter - avoid empty)   // todo: split parameters by quotes first!
-        let cmdParts = cmd.split(' ').filter(item => item);
-        let command = cmdParts[0];
-        let params = cmdParts.slice(1);
-        let output;
+        let cmdLine = cliEl.value;
 
-        // console.log('command: ' + command, params);
+        QConsole.cliExec(cmdLine);
 
-        QConsole.cli.history.push(cmd);
-        QConsole.cli.historyPosition = QConsole.cli.history.length - 1;
-
-        // call command - exec handler, if registered
-        output = {    result: 'command not found',     level: 'error'     };
-
-        if (typeof QConsole.cli.commands[command] === 'function')   {
-            output = QConsole.cli.commands[command](params);
-        }
-
-        // write cmd call result to console and reset command input text
-        QConsole.log("> " + cmd, output.result, output.level ?? 'log');
+        // reset command input text
         cliEl.value = '';
     },
 
-    cliHistory: (e, direction) => {
+        /**
+         * Command Line Interface - post a line of user input
+         * (parses parameters, adds line to history stack)
+         * @param cmdLine string
+         */
+        /*cliSend: (cmdLine) => {
+            // split cmd line to parts (filter - avoid empty)
+            let cmdParts = cmdLine.split(' ').filter(item => item);
+            let command = cmdParts[0];
+            let params = cmdParts.slice(1);
+            // console.log('command: ' + command, params);
+
+            QConsole.cli.history.push(cmdLine);
+            QConsole.cli.historyPosition = QConsole.cli.history.length - 1;
+
+            // call command - exec its callable, if registered
+            return QConsole.cliExec(command, params);
+        },*/
+
+    /**
+     * Command Line Interface - parse a line of user input
+     * @param cmdLine string
+     * @protected
+     */
+    cliParse: (cmdLine) => {
+        // split cmd line to parts (filter - avoid empty)   // todo: split parameters by quotes first!
+        let cmdParts = cmdLine.split(' ').filter(item => item);
+        let command = cmdParts[0];
+        let params = cmdParts.slice(1);
+        // console.log('command: ' + command, params);
+        return  {
+            command: command,
+            params: params,
+        }
+    },
+
+
+    /**
+     * Command Line Interface - validate and execute command (if registered in QConsole.cli.commands)
+     * @param cmdLine string Command line input
+     */
+    cliExec: (cmdLine) => {
+        let parsed = QConsole.cliParse(cmdLine),
+            command = parsed.command,
+            params = parsed.params;
+
+        QConsole.cli.history.push(cmdLine);
+        QConsole.cli.historyPosition = QConsole.cli.history.length - 1;
+
+        let output = {
+            result: 'command not found',
+            level: 'error',
+        };
+
+        if (typeof QConsole.cli.commands[command]?.callable === 'function')   {
+            output = QConsole.cli.commands[command].callable(params);
+        }
+
+        // write cmd call result to console
+        if (typeof output.result === 'string')  {
+            QConsole.write("> " + cmdLine +"\n"+ output.result, output.level ?? 'log');
+        }
+        else    {
+            QConsole.log("> " + cmdLine, output.result, output.level ?? 'log');
+        }
+
+        return output;
+    },
+
+    cliInputHistory: (e, direction) => {
         direction = Utility.forceNumberInScope(parseInt(direction),-1,1);  // force between -1 and 1, exit when no history or no direction given
         if (!QConsole.cli.history.length || !direction)
             return;
-        let cliEl = e.currentTarget;
+        let cliInput = e.currentTarget;
         // console.log('QConsole.cli.historyPosition:', QConsole.cli.historyPosition);
 
         // set cli input to historic value
-        cliEl.value = QConsole.cli.history[QConsole.cli.historyPosition] ?? '';
+        cliInput.value = QConsole.cli.history[QConsole.cli.historyPosition] ?? '';
         // update current history recall pointer (will reset on another cmd call)
         QConsole.cli.historyPosition += direction;
         // force position - min: -1, max: history.length-1  (min: -1: means it will also show empty as the oldest one. change to 0 to end on the first called command)
@@ -335,41 +423,114 @@ let QConsole = {
 
     /**
      * Register command handlers
-     * @param customCommands array-object ['cmd': handlerFunc]
-     *  (expected handler return value is: {result: mixed, level: string [log|info|warning|error]}
+     * @param commands array-object ['cmd':
+     *  title: string 
+     *  syntax: string
+     *  description: string
+     *  callable: function
+     * ]
+     *  (expected handler return value is: {result: string, level: string [log|info|warning|error]}
      */
-    cliRegisterCommands: (customCommands) => {
+    cliRegisterCommands: (commands) => {
         // for external use - register custom commands
-        if (customCommands)   {
-            $.each(customCommands, (command, handle) => {
-                QConsole.cli.commands[command] = handle;
+        if (commands)   {
+            $.each(commands, (cmd, handleConf) => {
+                QConsole.cli.commands[cmd.toLowerCase()] = handleConf;
             })
         }
-        // setup QConsole default commands
+        // internal - setup QConsole default commands
         else    {
-            QConsole.cli.commands = {
-                'eval': (params) => {
-                    console.log('eval - params:', params);
-                    if (params.length)  {
-                        return {    result: eval(params.join(' ')),     level: 'info'  }
-                    }
-                    return {    result: 'evaluate error: parameter missed, nothing to execute',     level: 'error'     };
+            let defaultCommands = {
+                // todo: check and describe whether they are lower-cased
+                // todo: sort before displaying full help
+                'help': {
+                        title: "Commands reference",
+                        syntax: "help [COMMAND]",
+                        description: "Show console command(s) informations",
+                        callable: (params) => {
+                            let result = '';
+                            let level = 'info';
+                            console.log('help - params:', params);
+                            //console.log(QConsole.cli.commands);
+
+                            // display help only for passed command
+                            if (params[0])  {
+                                let cmd = params[0];
+                                let conf = QConsole.cli.commands[cmd];
+                                if (conf)   {
+                                    result = "\n"+ cmd
+                                             +"\n    "+ conf.title
+                                             +"\n    Syntax: "+ conf.syntax
+                                             +"\n    "+ conf.description;
+                                }
+                                else {
+                                    result = 'Command '+ cmd +' is not registered'; 
+                                    level = 'error';
+                                }
+                            }
+                            // full help
+                            else    {
+                                result = 'Available commands:';
+                                $.each(QConsole.cli.commands, (cmd, conf) => {
+                                    if (conf.title  ||  App.DEV) {
+                                        result += "\n\n  "+ conf.syntax
+                                                 +"\n    "+ conf.title;
+                                    }
+                                });
+                            }
+
+                            return {    result: result,     level: level     };
+                        },
                 },
 
-                'qconsole': (params) => {
-                    console.log('QConsole - params: ', params);
-                    let method = params[0];
-                    let methodParams = params.slice(1);
-                    console.log(methodParams);
-                    if (!method) {
-                        return {    result: 'QConsole: no method specified!',    level: 'warning'     };
-                    }
-                    if (typeof QConsole[method] !== 'function') {
-                        return {    result: 'QConsole: cannot find method `'+method+'`',    level: 'error'     };
-                    }
-                    return {    result: QConsole[method](methodParams.join(' ')), };
+                'eval': {   // todo later: restrict to DEV
+                        title: "Evaluate JavaScript expression",
+                        syntax: "eval CODE",
+                        description: "Run JS code",
+                        callable: (params) => {
+                            console.log('eval - params:', params);
+                            if (params.length)  {
+                                return {    result: eval(params.join(' ')),     level: 'info'  }
+                            }
+                            return {    result: 'evaluate error: parameter missed, nothing to execute',     level: 'error'     };
+                        },
+                },
+
+                'qconsole': {
+                        title: 'QConsole method',
+                        syntax: 'QConsole METHOD [PARAM]...',
+                        description: 'QConsole lib method call',
+                        callable: (params) => {
+                            console.log('QConsole - params: ', params);
+                            let method = params[0];
+                            let methodParams = params.slice(1);
+                            console.log(methodParams);
+                            if (!method) {
+                                return {    result: 'QConsole: no method specified!',    level: 'warning'     };
+                            }
+                            if (typeof QConsole[method] !== 'function') {
+                                return {    result: 'QConsole: cannot find method `'+method+'`',    level: 'error'     };
+                            }
+                            return {    result: QConsole[method](methodParams.join(' ')), };
+                        },
                 },
             };
+
+            //console.log(QConsole.dev);
+            // todo later: restrict to DEV. the problem is, it starts before any App.DEV or config value is set. how to handle that?
+            //if (QConsole.DEV)   {
+                defaultCommands['debug'] = {
+                        title: "Debug QConsole CLI",
+                        syntax: "debug",
+                        description: "Output CLI full config",
+                        callable: (params) => {
+                            //QConsole.log('QConsole CLI debug: ', QConsole.cli);
+                            //return {    result: 'QConsole CLI : see devtools',     level: 'info'  }
+                            return {    result: QConsole.cli,     level: 'info'  }
+                        },
+                };
+            //}
+            QConsole.cliRegisterCommands(defaultCommands);
         }
     },
 

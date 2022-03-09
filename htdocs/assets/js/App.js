@@ -29,21 +29,22 @@ let App = {
      * Developer helper
      * @private
      */
-    _lowLevel: () => {
+    _lowLevel_preBoot: () => {
             // usually the line below SHOULD NOT BE COMMENTED OUT!
         return;
 
+        // QConsole.cliExec('help');
 
         // Hide / remove some dom elements for work (like navbar, or other sticky or big elements which disturbs work by covering everything on big zoom... etc)
         Utility.replaceDomElements({
             '.navbar': '',
             //'#operate-panel': '',
         });
-        // App.TEST_EXPLICIT = true;
+        App.TEST_EXPLICIT = true;
         App.DEV = true;
 
 
-        Xplayer.synchronizationMonitor({refresh: 500});
+        // Xplayer.synchronizationMonitor({refresh: 500});
         // VolumeControls.runTester('VolumeRotaryPot');     App.TEST_EXPLICIT = true;
         // VolumeControls.runTester('Crossfader');          App.TEST_EXPLICIT = true;
     },
@@ -60,7 +61,7 @@ let App = {
 
         // Build custom console (dedicated for standalone mode)
 
-        QConsole.configure({dev: App.DEV /*startState: 'expanded'*/});
+        QConsole.configure({dev: App.DEV, startState: 'expanded'});
         QConsole.cliRegisterCommands(Xplayer.cliCommands());    // or call after app config initialize?
         QConsole.available = true;
         $('#console').QC_makeItAConsole();
@@ -71,9 +72,18 @@ let App = {
      * Last preparations before App boot
      */
     preBoot: () => {
-        App._lowLevel();
+        App._lowLevel_preBoot();
     },
 
+
+
+    writeToConsole: (log, level) => {
+        QConsole.write(log, level);
+    },
+
+    logToConsole: (log, data, level) => {
+        QConsole.log(log, data, level);
+    },
 };
 
 
@@ -105,10 +115,10 @@ let App = {
 
     // Last things before we go
 
-    App.preBoot();
+    App._lowLevel_preBoot();
 
     if (App.TEST_EXPLICIT)  {
-        return Xplayer.writeToConsole('Explicit feature test mode! App boot disabled', null, 'warning');
+        return App.writeToConsole('Explicit feature test mode! App boot disabled', 'warning');
     }
 
 
@@ -128,7 +138,7 @@ let App = {
         XplayerNode.readConfigData((readConfig) => {
             readConfig.console_show = true;
             readConfig.data_dir = readConfig.data_dir.replace('/^\.\/data/', './app/data/');
-            Xplayer.writeToConsole(readConfig.data_dir);
+            App.logToConsole(readConfig.data_dir);
 
             boot(readConfig);
         });

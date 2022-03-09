@@ -21,10 +21,10 @@ let XplayerNode = {
         if (typeof nw !== 'undefined')  {
             XplayerNode.operating = true;
             XplayerNode.n.fs = nw.require('fs');
-            Xplayer.writeToConsole('- node.js check:', 'FOUND!', 'info');
+            App.writeToConsole('- node.js check: FOUND!', 'info');
         }
         else    {
-            Xplayer.writeToConsole('- node.js check:', 'not present.', 'info');
+            App.writeToConsole('- node.js check: not present.', 'info');
         }
     },
 
@@ -33,21 +33,22 @@ let XplayerNode = {
         callback([]);
         return [];
         if (!XplayerNode.operating)     return [];
-        Xplayer.writeToConsole ("- READ CONF START");
+        App.writeToConsole ("- READ CONF START");
 
         let config = {};
         let userPreferences = {};
+            let userPreferencesData = {};
 
         // 1: Optionally, read [data]/userPreferences.json
 
 //        let userPreferencesData = XplayerNode.readFile(XplayerNode.config.data_dir + 'userPreferences.json');
-            Xplayer.writeToConsole('userPreferencesData', userPreferencesData);
+            App.logToConsole('userPreferencesData', userPreferencesData);
 
         if (userPreferencesData) {
             // userPreferences = JSON.parse(userPreferencesData);
-            // Xplayer.writeToConsole('userPreferences', userPreferences);
+            // App.writeToConsole('userPreferences', userPreferences);
         }
-        Xplayer.writeToConsole('userPreferences', userPreferences);
+        App.logToConsole('userPreferences', userPreferences);
 return;
         // 2: If present, read [data]/config.json
 
@@ -55,7 +56,7 @@ return;
         if (generalConfigData) {
             // todo: decide - if config.json found, we expect it has full config and nothing else is read?
             config = JSON.parse(generalConfigData);
-            Xplayer.writeToConsole('config', config);
+            App.logToConsole('config', config);
         }
         else {
             // 3: Scan data subdirs
@@ -71,7 +72,7 @@ return;
         config.prefs = userPreferences;
         callback(config);
 
-        Xplayer.writeToConsole ("... config read finished."); 
+        App.writeToConsole ("... config read finished."); 
     },
 
 
@@ -79,15 +80,15 @@ return;
     readFile: (path) => {
         if (!XplayerNode.operating)     return;
         let content = '';
-        //Xplayer.writeToConsole(' - path: ' + path);
+        //App.writeToConsole(' - path: ' + path);
 
         try {
             content = XplayerNode.n.fs.readFileSync(path, 'utf8');
         } catch (err) {
-            Xplayer.writeToConsole('error: ' + err);
+            App.logToConsole('error: ', err, 'error');
         }
-        //Xplayer.writeToConsole(' - content: ' + content);
-        //Xplayer.writeToConsole(' - content2: ', content);
+        //App.writeToConsole(' - content: ' + content);
+        //App.logToConsole(' - content2: ', content);
         return content;
     },
 
@@ -104,10 +105,10 @@ return;
                 return XplayerNode.n.fs.lstatSync(fileName).isDirectory()
             });
             
-            Xplayer.writeToConsole(' - subdirs: ', subdirs);
+            App.logToConsole(' - subdirs: ', subdirs);
             
         } catch (err) {
-            Xplayer.writeToConsole('error: ' + err);
+            App.logToConsole('error: ', err, 'error');
         }
         return subdirs;        
     }

@@ -52,7 +52,7 @@
 
     .q-console .log-container .item    {
         display: block;
-        margin: .125rem  1.25rem;
+        margin: 1.5rem  1.25rem  .125rem;
         border-top: .063rem solid var(--qc-log-color);
         color: var(--qc-log-color);
     }

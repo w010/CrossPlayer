@@ -90,7 +90,7 @@ let Xplayer = {
                     },*/
             ],
         }
-        Xplayer.writeToConsole('CONFIG:', Xplayer.config, 'info');
+        App.logToConsole('CONFIG:', Xplayer.config, 'info');
         if (Xplayer.config.dev)
             $('body').addClass('dev-mode');
 
@@ -419,7 +419,7 @@ console.log('TIME FINAL: ', time);
             .draggable({
                 revert: true,
                 snap: '.dropzone',
-                connectToSortable: '#container-all-tracks',
+                //connectToSortable: '#container-all-tracks',
                 scroll: true,
                 scrollSensitivity: 100,
                 scrollSpeed: 100,
@@ -1068,10 +1068,6 @@ console.log('TIME FINAL: ', time);
     },
 
 
-    writeToConsole: (log, data, level) => {
-        QConsole.log(log, data, level);
-    },
-
 
     /**
      * Cli handlers for console
@@ -1079,43 +1075,69 @@ console.log('TIME FINAL: ', time);
      */
     cliCommands: () => {
         return {
-            'reel': (params) => {
-                // todo later: handle object methods calling, like other
-                QConsole.collapse();
-                //ReelTape.configure();
-                ReelTape.runTester();
-                return {result: 'Reel Tape tester screen'};
+            'reel': {
+                    title: 'ReelTape method',
+                    syntax: 'ReelTape METHOD [PARAM]...',
+                    description: 'ReelTape lib method call',
+                    callable: (params) => {
+                        // todo later: handle object methods calling, like other
+                        QConsole.collapse();
+                        //ReelTape.configure();
+                        ReelTape.runTester();
+                        return {result: 'Reel Tape tester screen'};
+                    },
             },
 
-            'xplayer': (params) => {
-                console.log('Xplayer - params: ', params);
-                let method = params[0];
-                let methodParams = params.slice(1);
-                console.log(methodParams);
-                if (!method) {
-                    return {    result: 'Xplayer: no method specified!',    level: 'warning'     };
-                }
-                if (typeof Xplayer[method] !== 'function') {
-                    return {    result: 'Xplayer: cannot find method `'+method+'`',    level: 'error'     };
-                }
-                return {    result: Xplayer[method](methodParams.join(' ')), };
+            'xplayer': {
+                    title: 'Xplayer method',
+                    syntax: 'Xplayer METHOD [PARAM]...',
+                    description: 'Xplayer lib method call',
+                    callable: (params) => {
+                        console.log('Xplayer - params: ', params);
+                        let method = params[0];
+                        let methodParams = params.slice(1);
+                        console.log(methodParams);
+                        if (!method) {
+                            return {    result: 'Xplayer: no method specified!',    level: 'warning'     };
+                        }
+                        if (typeof Xplayer[method] !== 'function') {
+                            return {    result: 'Xplayer: cannot find method `'+method+'`',    level: 'error'     };
+                        }
+                        return {    result: Xplayer[method](methodParams.join(' ')), };
+                    },
+            },
+
+            'god': {
+                    title: '',
+                    syntax: 'god',
+                    description: '',
+                    callable: (params) => {
+                        return {result: 'Q3A splash'};
+                    },
             },
         }
     },
 
+    Test: (p1, p2, p3) => {
+        console.log('--------CLI TEST');
+        console.log(' 1st param: ', p1);
+        console.log(' 2nd param: ', p2);
+        console.log(' 3rd param: ', p3);
+    },
 
     /**
      * Audio players synchronization monitoring
      */
     synchronizationMonitor: (conf) => {
         let refresh = conf?.refresh  ??  1000;
-        let monitoringActive = true;
         // if exist - destroy
         let monitor = $('#sync_monitor');
         if (monitor.length) {
-            monitoringActive = false;
+            // make use of the instances registry, to keep the sync state, to break loop when destroying monitor
+            Xplayer.instances._sync_monitoring = false;
             return monitor.remove();
         }
+        Xplayer.instances._sync_monitoring = true;
 
         let instances = {
             time_base: {
@@ -1182,14 +1204,14 @@ console.log('TIME FINAL: ', time);
 
         // start monitoring - loop all players' time position, if state = playing
         let monitoringLoop = setInterval(() => {
-            if (!monitoringActive)   {
-                console.log('BREAK!');
+            if (!Xplayer.instances?._sync_monitoring)   {
+                console.log('Stopped monitoring. Exit loop.');
                 return clearInterval(monitoringLoop);
             }
             if (Xplayer.play_state !== 1)   {
                 return;
             }
-            console.log('------ REFRESH MONITOR');
+            //console.log('------ REFRESH MONITOR');
 
             // first collect the values at once, with minimum effort,
             $.each(['time_base', 'A', 'B', 'backtrack'], (i, instanceKey) => {
