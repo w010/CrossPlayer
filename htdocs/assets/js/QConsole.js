@@ -3,7 +3,7 @@
  * Can handle many parallel consoles in the same time, ie. to separate your topics and switch to new empty one.
  * (like in ConEmu)
  * 
- * v0.5
+ * v0.6
  * 
  * wolo.pl '.' studio
  * 2022
@@ -421,9 +421,8 @@ let QConsole = {
 
         QConsole.cliExec(cmdLine);
 
-        // reset command input text
-        cliInput.value = '';
-        acSpacer.innerText = '';
+        // reset command input text (and synced values)
+        QConsole.cliValueSet('');
     },
 
 
@@ -451,6 +450,8 @@ let QConsole = {
      * @param cmdLine string Command line input
      */
     cliExec: (cmdLine) => {
+        cmdLine = cmdLine.trim();
+
         let parsed = QConsole.cliParse(cmdLine),
             command = parsed.command,
             params = parsed.params;
@@ -648,8 +649,8 @@ let QConsole = {
         // reset / cleanup each time and build new set (must be before validation, to remove box on cmd empty)
         QConsole.cliAcDeactivate();
 
-        cmdLine = cmdLine.trim().toLowerCase();
-        if (!cmdLine)   {
+        cmdLine = cmdLine.toLowerCase();
+        if (!cmdLine.trim())   {
             return;
         }
 
@@ -663,7 +664,8 @@ let QConsole = {
 
         // set the same text value to the special spacer block hidden under the input (offset-resizer) 
         //  - this will allow to calculate the offset finally (or position stacking float on it)
-        acSpacer.innerText = cmdLine;
+        // acSpacer.innerText = cmdLine;
+        QConsole.cliValueSet(cmdLine);  // check if we can set the input val here, or it complicates something
             // luckily, with current styles it aligns automatically, but if in future it stops - use that offset
             // let caretOffset = acSpacer.offsetWidth;
 
@@ -739,6 +741,19 @@ let QConsole = {
         return !! QConsole.cli?.autocompleteIsInAction;
     },
 
+    /**
+     * Use this to update/reset current cli value - to keep always in sync both values (real and offset-trick)
+     * Also - replaces spaces with underscores for the hidden input, to not being ignored 
+     * @param cmdLine
+     */
+    cliValueSet: (cmdLine) => {
+        // let acContainer = QConsole.cli.el.acContainer[0];
+        let cliInput = QConsole.cli.el.input[0];
+        let acSpacer = QConsole.cli.el.acSpacer[0];
+
+        cliInput.value = cmdLine;
+        acSpacer.innerText = cmdLine.replaceAll(' ', '_');
+    },
 
     /**
      * Handle autocomplete prompt navigation
