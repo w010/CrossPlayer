@@ -34,7 +34,8 @@ let App = {
         return;
 
         // QConsole.cliExec('xplayer  Test "a  b"  "c" "d"');
-        QConsole.cliAutocomplete('de');     $('input.command').val('de');
+        QConsole.cliAutocomplete('q');      QConsole.cli.el.input[0].value = 'q';
+        // QConsole.cliAutocomplete('de');     QConsole.cli.el.input[0].value = 'de';
 
         // Hide / remove some dom elements for work (like navbar, or other sticky or big elements which disturbs work by covering everything on big zoom... etc)
         Utility.replaceDomElements({

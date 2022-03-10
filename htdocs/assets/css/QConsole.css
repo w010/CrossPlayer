@@ -158,9 +158,11 @@
                         .q-console .cli .ac-container .ac-cmd   {
                             color: var(--wtp-gray2);
                         }
-                    .q-console .cli .ac-container .ac-item:hover   {
+                    .q-console .cli .ac-container .ac-item:hover,
+                    .q-console .cli .ac-container .ac-item.ac-selected   {
                         background-color: var(--wtp-background-alt);
                         border: 1px solid var(--wtp-background-general);
+                        color: #50b06b;
                     }
 
     .q-console .cli .prompt::before {

@@ -1112,23 +1112,17 @@ console.log('TIME FINAL: ', time);
                     },
             },
 
-            'god': {
+            'give all': {
                     title: '',
-                    syntax: 'god',
+                    syntax: 'give all',
                     description: '',
                     callable: (params) => {
-                        return {result: 'Q3A splash'};
+                        //return {result: 'Q3A splash'};
                     },
             },
         }
     },
 
-    Test: (p1, p2, p3) => {
-        console.log('--------CLI TEST');
-        console.log(' 1st param: ', p1);
-        console.log(' 2nd param: ', p2);
-        console.log(' 3rd param: ', p3);
-    },
 
     /**
      * Audio players synchronization monitoring

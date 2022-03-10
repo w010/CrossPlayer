@@ -3,7 +3,7 @@
  * Can handle many parallel consoles in the same time, ie. to separate your topics and switch to new empty one.
  * (like in ConEmu)
  * 
- * v0.4
+ * v0.5
  * 
  * wolo.pl '.' studio
  * 2022
@@ -42,9 +42,26 @@ let QConsole = {
     cli: {
         // available registered commands and their handlers
         commands: {},
+
         // history of commands executed
         history: [],
         historyPosition: 0,
+
+        // whether ac box is now in some prompting action (thus: visible)
+        autocompleteIsInAction: false,
+        // on cli keyup the ac prompt is activated, but sometimes we use special buttons to navigate it 
+        // - in such case, we need to prevent the keyup from running that time
+        autocompleteListenerFreeze: false,
+
+        // elements referenced  // todo later: rework to QCInstance object, or something
+        el: {
+            // command input
+            input: null,
+            // auto-completion container box for prompt items
+            acContainer: null,
+            // auto-completion spacer element, for the offset-box-to-caret hack
+            acSpacer: null,
+        }
     },
 
     /**
@@ -97,6 +114,14 @@ let QConsole = {
                                         // escape - collapse
                                     27:     (e) => {   QConsole.collapse();    }
                             },
+
+                // command line auto-completion
+            cliAutocomplete:     setup?.cliAutocomplete
+                            ??      true,
+
+            cliAcSelectedItemClass:     setup?.cliAcSelectedItemClass
+                            ??      'ac-selected',
+
         }
 
         if (setup?.dev)
@@ -116,15 +141,15 @@ let QConsole = {
             return console.warn('setupInstance: Console ALREADY SET! exit');
         }
 
-        let Qel = QConsole.el = $(el);
-
-        // on load::
+        // on load:
         // state 0 = collapsed
         QConsole.state = 0;
-        if (QConsole.config.startState === 'expanded')  {
-            QConsole.state = 1;
-            Qel.addClass('expanded');
-        }
+
+        // create + store instance references
+        let Qel = QConsole.el = $(el);
+        let cliInput = QConsole.cli.el.input = $('<input class="command" placeholder="...">');
+        let acSpacer = QConsole.cli.el.acSpacer = $('<div class="ac-spacer">');
+        let acContainer = QConsole.cli.el.acContainer = $('<div class="ac-container">');
 
 
         // build console
@@ -133,18 +158,25 @@ let QConsole = {
             .prop('style', '--qc-size: '+QConsole.config.expandSize)
             .append(
                 $('<div class="log-container"></div>'),
-                // $('<div class="cli"> <div class="prompt"></div> <div class="command-line"> <div class="autocomplete"></div> <input class="command" placeholder="..."> </div>')
                 $('<div class="cli">').append(
                         $('<div class="prompt"></div>'),
                         $('<div class="command-line">').append(
-                                $('<input class="command" placeholder="...">'),
+                                cliInput,
                                 $('<div class="autocomplete">').append(
-                                        $('<div class="ac-spacer">'),
-                                        $('<div class="ac-container">'),
+                                        acSpacer,
+                                        acContainer,
                                 )
                         )
                 )
             );
+
+
+        // open on start, if requested to
+        if (QConsole.config.startState === 'expanded')  {
+            QConsole.state = 1;
+            Qel.addClass('expanded');
+            cliInput.focus();
+        }
 
 
         // bind listeners
@@ -163,8 +195,9 @@ let QConsole = {
 
         // keyboard internal
         if (Object.keys(QConsole.config.bindKeystrokesInConsole).length)  {
-            $(Qel).on('keydown', e => {
-                // console.log('INTERNAL CONSOLE KEYSTROKE: ', e.keyCode);
+
+            Qel.on('keydown', e => {
+                if (App.DEBUG > 1)   console.log('INTERNAL CONSOLE KEYSTROKE: ', e.keyCode);
                 // omit execution of listeners on higher level (like app's global hotkeys)
                 e.stopPropagation();
                 $.each(QConsole.config.bindKeystrokesInConsole, (key, callback) => {
@@ -175,22 +208,56 @@ let QConsole = {
             });
         }
 
-        // keyboard cli
-        Qel.find('input.command').on('keydown', e => {
-            //console.log(e.keyCode);
-            if (e.keyCode  ===  38) // cursor UP - previous from history
-                return QConsole.cliInputHistory(e, -1);
-            if (e.keyCode  ===  40) // cursor DOWN - next from history
-                return QConsole.cliInputHistory(e, +1);
-            if (e.keyCode  ===  13) // enter - handle current input value
-                return QConsole.cliHandleSubmit(e);
+        // keyboard cli (separated)
+        cliInput.on('keydown', e => {
+            // console.log(e.keyCode);
+
+            QConsole.cli.autocompleteListenerFreeze = false;
+
+            // if autocomplete prompt is active and visible, overrule some of keypresses listeners (to prompt navigation) 
+            if (QConsole.cliAcIsActive())    {
+                    if (App.DEBUG > 1)  console.log('INTERNAL CONSOLE KEYSTROKE AUTOCOMPLETE: ', e.keyCode);
+
+                    e.stopPropagation();
+                    QConsole.cli.autocompleteListenerFreeze = true;
+
+                    if (e.keyCode  ===  38) // cursor UP - previous item
+                        return QConsole.cliAcNavigatePrompt(e, -1);
+                    if (e.keyCode  ===  40) // cursor DOWN - next item
+                        return QConsole.cliAcNavigatePrompt(e, +1);
+                    if (e.keyCode  ===  13) // ENTER - confirm
+                        return QConsole.cliAcNavigatePrompt(e, true);
+                    if (e.keyCode  ===  9) // TAB - confirm
+                        return QConsole.cliAcNavigatePrompt(e, true);
+                    if (e.keyCode  ===  27) // ESC - dismiss
+                        return QConsole.cliAcNavigatePrompt(e, false);
+                    //if (e.keyCode  ===  8  &&  )  // backspace -
+
+                    // if we still here, set to normal operation (that way prevents making another mess) 
+                    QConsole.cli.autocompleteListenerFreeze = false;
+            }
+
+            // otherwise - normal cli behaviour
+            else    {
+                    if (App.DEBUG > 1)  console.log('INTERNAL CONSOLE KEYSTROKE CLI: ', e.keyCode);
+                    if (e.keyCode  ===  38) // cursor UP - previous from history
+                        return QConsole.cliInputHistory(e, -1);
+                    if (e.keyCode  ===  40) // cursor DOWN - next from history
+                        return QConsole.cliInputHistory(e, +1);
+                    if (e.keyCode  ===  13) // enter - handle current input value
+                        return QConsole.cliHandleSubmit(e);
+            }
         })
         .on('keyup', e => {
-            //console.log(e.keyCode);
-            if (0)  {   // autocomplete enabled?. todo: option
-                QConsole.cliHandleTyping(e);
+
+            if (QConsole.config.cliAutocomplete  &&  ! QConsole.cli.autocompleteListenerFreeze)  {
+                    //console.log(e.keyCode);
+                    // let cliInput = e.currentTarget;
+                    let cliInput = QConsole.cli.el.input[0];
+                    let cmdLine = cliInput.value;
+
+                    QConsole.cliAutocomplete(cmdLine);
             }
-            //if (e.keyCode  ===  9) // todo: tab: autocomplete?  // todo: writing: autocomplete when writing, after first tab use?
         });
 
 
@@ -305,7 +372,7 @@ let QConsole = {
             return console.error('QConsole Not initialized? Instance $el not set');
         }
         QConsole.el.addClass('expanded');
-        QConsole.el.find('.command-line').focus();
+        QConsole.cli.el.input.focus();
         QConsole.state = 1;
     },
 
@@ -346,28 +413,19 @@ let QConsole = {
      * @protected
      */
     cliHandleSubmit: (e) => {
-        let cliEl = e.currentTarget;
-        let cmdLine = cliEl.value;
+        //let cliInput = e.currentTarget;
+        let cliInput = QConsole.cli.el.input[0];
+        let acSpacer = QConsole.cli.el.acSpacer[0];
+        let cmdLine = cliInput.value;
 
         QConsole.cliExec(cmdLine);
 
         // reset command input text
-        cliEl.value = '';
+        cliInput.value = '';
+        acSpacer.innerText = '';
     },
 
-    /**
-     * Command Line Interface - handle input/submit
-     * @param e Keyboard event (usually enter key)
-     * @protected
-     */
-    cliHandleTyping: (e) => {
-        let cliEl = e.currentTarget;
-        let cmdLine = cliEl.value;
-        //console.log(e);
-        //console.log(cmdLine);
 
-        QConsole.cliAutocomplete(cmdLine);
-    },
 
     /**
      * Command Line Interface - parse a line of user input
@@ -572,28 +630,36 @@ let QConsole = {
 
 
     cliAutocomplete: (cmdLine) => {
+        if (!QConsole.el)    {
+            return console.error('QConsole Not initialized? Instance $el not set');
+        }
+        // reset / cleanup each time and build new set (must be before validation, to remove box on cmd empty)
+        QConsole.cliAcReset();
+
         cmdLine = cmdLine.trim().toLowerCase();
         if (!cmdLine)   {
             return;
         }
-        // todo: link to instance on init, to reuse
-        let acContainer = QConsole.el.get(0).querySelectorAll('.autocomplete .ac-container')[0];
-        let acSpacer = QConsole.el.get(0).querySelectorAll('.autocomplete .ac-spacer')[0];
-        let cliInput = QConsole.el.get(0).querySelectorAll('input.command')[0];
 
-        // reset - cleanup each time
-        acContainer.replaceChildren();
+        let selectedItemClass = QConsole.config.cliAcSelectedItemClass;
+        let acContainer = QConsole.cli.el.acContainer[0];
+        let acSpacer = QConsole.cli.el.acSpacer[0];
+        let cliInput = QConsole.cli.el.input[0];
+        let completionItemsCount = 0;
+        // declaring here we will get the last item in this var, so we can later mark it
+        let acItem = null;
 
-        // set the same text value to the spacer block under the input (offset-resizer) - this will allow to calculate the offset finally
+        // set the same text value to the special spacer block hidden under the input (offset-resizer) 
+        //  - this will allow to calculate the offset finally (or position stacking float on it)
         acSpacer.innerText = cmdLine;
-            // maybe with current styles it will align automatically, if not - use that offset
+            // luckily, with current styles it aligns automatically, but if in future it stops - use that offset
             // let caretOffset = acSpacer.offsetWidth;
 
 
         // build the autocompletion-items and add to ac container
         let addItem = (conf) => {
-            const item = document.createElement('div');
-                item.classList.add('ac-item');
+            acItem = document.createElement('div');
+                acItem.classList.add('ac-item');
             const _command = document.createElement('div');
                 _command.classList.add('ac-cmd');
                 _command.innerText = conf.commandDetails;
@@ -601,13 +667,18 @@ let QConsole = {
                 _completion.innerText = conf.completionPart;
                 _completion.classList.add('ac-completion');
 
-            item.appendChild(_command);
-            item.appendChild(_completion);
-            acContainer.appendChild(item);
+            acItem.appendChild(_command);
+            acItem.appendChild(_completion);
+            acContainer.appendChild(acItem);
+            completionItemsCount++;
 
-            item.addEventListener('click', (e) => {
+
+            acItem.addEventListener('click', (e) => {
                 cliInput.value = conf.command;
                 acSpacer.innerText = conf.command;
+
+                // auto-completion chosen - set value, job done for now - deactivate promptbox
+                QConsole.cliAcDeactivate()
             });
         };
 
@@ -615,11 +686,8 @@ let QConsole = {
         // search for the string in keys and collect completion propositions 
         $.each(QConsole.cli.commands, (command, handleConf) => {
             let cmdNameMatchPos = command.indexOf(cmdLine);
-            // take these with match on pos 0 (begins with input str), exit if it's compled  
+            // take these with match on pos 0 (begins with input str), exit if it's complete
             if (cmdNameMatchPos === 0  &&  cmdLine !== command)   {
-                    // console.log(cmdNameMatchPos);
-                    // console.log(command);
-                    // console.log(handleConf);
 
                 addItem({
                     command: command,
@@ -629,7 +697,106 @@ let QConsole = {
                 })
             }
         });
+
+        // if any prompt completion items was built
+        if (completionItemsCount)   {
+            // set the selected class to the last item
+            acItem?.classList.add(selectedItemClass);
+            // set the auto-completion is active (selector visible and navigable) - that changes some behaviour
+            QConsole.cliAcActivate();
+        }
     },
+
+
+    cliAcReset: () => {
+        let acContainer = QConsole.cli.el.acContainer[0];
+        acContainer.replaceChildren();
+    },
+
+    cliAcDeactivate: () => {
+        QConsole.cli.autocompleteIsInAction = false;
+        QConsole.cliAcReset();
+    },
+
+    cliAcActivate: () => {
+        QConsole.cli.autocompleteIsInAction = true;
+    },
+
+
+    cliAcIsActive: () => {
+        return !! QConsole.cli?.autocompleteIsInAction;
+    },
+
+
+    /**
+     * Handle autocomplete prompt navigation
+     * @param e Event
+     * @param value integer|boolean
+     */
+    cliAcNavigatePrompt: (e, value) => {
+
+        e.preventDefault();
+
+        let selectedItemClass = QConsole.config.cliAcSelectedItemClass;
+        let acContainer = QConsole.cli.el.acContainer[0];
+        //let acSpacer = QConsole.cli.el.acSpacer[0];
+
+
+        if (typeof value === 'boolean') {
+            switch (value)  {
+
+                case true:
+                        console.log('- CONFIRM SELECTION');
+                        $(acContainer).find('.ac-item.'+selectedItemClass)
+                            .click();
+                        break;
+                default:
+                        console.log('- DISMISS AC');
+                        QConsole.cliAcDeactivate();
+                        break;
+            }
+        }
+        else if (typeof value === 'number')  {
+
+            // navigate / jump through ac items
+            console.log('NAVIGATE UP / DOWN', value);
+            value = Utility.forceNumberInScope(value, -1, 1);
+
+            // try to find a selected item, if any
+            let acItems = $(acContainer).find('.ac-item');
+            let acSelectedIndex = 0;
+            let acSelectNewIndex = 0;    // i think it should default to 0 to ensure no errors
+
+            if (!acItems.length)
+                return; // this should never happen, if we got here they must have been existing right before
+
+            acItems.each( (i, item) => {
+                //console.log('i: '+i, item);
+                if (item.classList.contains(selectedItemClass)) {
+                    // unmark current
+                    item.classList.remove(selectedItemClass);
+                    // calculate the new index
+                    acSelectedIndex = i;
+                    acSelectNewIndex = acSelectedIndex + value;
+
+                    if (acSelectNewIndex  >  acItems.length - 1)  {
+                        // new index exceeded array size - start over from first
+                        acSelectNewIndex -= acItems.length;
+                    }
+                    if (acSelectNewIndex  <  0) {
+                        // new index is negative - start from the last item
+                        acSelectNewIndex = acItems.length + acSelectNewIndex;
+                    }
+
+                    return acSelectNewIndex;
+                }
+            });
+
+            // mark as selected the last one set to this var
+            acItems[acSelectNewIndex].classList.add(selectedItemClass);
+        }
+    },
+
 
     /**
      * Extra functionality - write log nessages to file. Helps when console is hidden for user or unavailable for other reason,
