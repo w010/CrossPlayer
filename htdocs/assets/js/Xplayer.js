@@ -1112,10 +1112,10 @@ console.log('TIME FINAL: ', time);
                     },
             },
 
-            'give all': {
+            'give': {
                     title: '',
-                    syntax: 'give all',
-                    description: '',
+                    syntax: 'give WHAT',
+                    description: '[h2o]',
                     callable: (params) => {
                         //return {result: 'Q3A splash'};
                     },

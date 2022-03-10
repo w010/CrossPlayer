@@ -147,7 +147,7 @@
                         background-color: var(--wtp-background-general);
                         border: 1px solid var(--wtp-background-alt);
                         color: var(--wtp-gray5);
-                        padding: 0 2px;
+                        padding: 0 0px;
                         white-space: pre;
                         pointer-events: initial;
                         cursor: alias;

@@ -240,6 +240,7 @@ let QConsole = {
             // otherwise - normal cli behaviour
             else    {
                     if (App.DEBUG > 1)  console.log('INTERNAL CONSOLE KEYSTROKE CLI: ', e.keyCode);
+
                     if (e.keyCode  ===  38) // cursor UP - previous from history
                         return QConsole.cliInputHistory(e, -1);
                     if (e.keyCode  ===  40) // cursor DOWN - next from history
@@ -435,7 +436,7 @@ let QConsole = {
     cliParse: (cmdLine) => {
         // split cmd line to parts (filter - avoid empty)
         let cmdParts = cmdLine.split(/("[^"]+"|[^\s"]+)/gmiu).filter(i => i.trim());
-        let command = cmdParts[0].toLowerCase();
+        let command = cmdParts[0]?.toLowerCase();
         let params = cmdParts.slice(1);
         // console.log('command: ' + command, params);
         return  {
@@ -497,6 +498,7 @@ let QConsole = {
 
 
     cliInputHistory: (e, direction) => {
+        e.preventDefault();
         direction = Utility.forceNumberInScope(parseInt(direction),-1,1);  // force between -1 and 1, exit when no history or no direction given
         if (!QConsole.cli.history.length || !direction)
             return;
@@ -608,15 +610,25 @@ let QConsole = {
                             return QConsole.cliEvalCode(evalCode);
                         },
                 },
+
+                'version': {
+                        title: 'App version',
+                        syntax: 'version',
+                        description: 'Print application version info',
+                        callable: (params) => {
+                            // todo: add components / libs versions (+ node?)
+                            return {    result: 'App: '+App.VERSION,     level: 'info'     };
+                        },
+                },
             };
 
-            //console.log(QConsole.dev);
+            //console.log(QConsole.DEV);
             // todo later: restrict to DEV. the problem is, it starts before any App.DEV or config value is set. how to handle that?
             //if (QConsole.DEV)   {
                 defaultCommands['debug'] = {
-                        title: "Debug QConsole CLI",
-                        syntax: "debug",
-                        description: "Output CLI full config",
+                        title: 'Debug QConsole CLI',
+                        syntax: 'debug',
+                        description: 'Output CLI full config',
                         callable: (params) => {
                             //QConsole.log('QConsole CLI debug: ', QConsole.cli);
                             //return {    result: 'QConsole CLI : see devtools',     level: 'info'  }
@@ -634,7 +646,7 @@ let QConsole = {
             return console.error('QConsole Not initialized? Instance $el not set');
         }
         // reset / cleanup each time and build new set (must be before validation, to remove box on cmd empty)
-        QConsole.cliAcReset();
+        QConsole.cliAcDeactivate();
 
         cmdLine = cmdLine.trim().toLowerCase();
         if (!cmdLine)   {

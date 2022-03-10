@@ -7,6 +7,7 @@
 
 let App = {
 
+    VERSION: '0.1.10',
     /**
      * Developer/advanced mode (deactivate / hide some elements / validations / checks / code parts, to make work easier) 
      * (bool)
@@ -34,7 +35,7 @@ let App = {
         return;
 
         // QConsole.cliExec('xplayer  Test "a  b"  "c" "d"');
-        QConsole.cliAutocomplete('q');      QConsole.cli.el.input[0].value = 'q';
+        // QConsole.cliAutocomplete('q');      QConsole.cli.el.input[0].value = 'q';
         // QConsole.cliAutocomplete('de');     QConsole.cli.el.input[0].value = 'de';
 
         // Hide / remove some dom elements for work (like navbar, or other sticky or big elements which disturbs work by covering everything on big zoom... etc)
@@ -44,6 +45,7 @@ let App = {
         });
         App.TEST_EXPLICIT = true;
         App.DEV = true;
+        App.DEBUG = 1;
 
 
         // Xplayer.synchronizationMonitor({refresh: 500});
@@ -60,6 +62,9 @@ let App = {
         if (document.body.classList.contains('dev-mode'))  {
             App.DEV = true;
         }
+        Utility.replaceDomElements({
+            '.appversion': ()=>{    return App.VERSION; },
+        });
 
         // Build custom console (dedicated for standalone mode)
 
